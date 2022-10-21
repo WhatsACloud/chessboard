@@ -12,8 +12,8 @@ def main():
     canvas.initCanvas(window)
     bd.initBoard(Pos(config.startX, config.startY))
 
-    test = piece.Piece(piece.pieceTypes.whiteBishop, BoardPos(0, 0))
-    test.snap()
+    test = piece.Rook(BoardPos(4, 4), piece.Color.white)
+    test2 = piece.Bishop(BoardPos(3, 3), piece.Color.white)
     window.mainloop()
 
 if __name__ == "__main__":

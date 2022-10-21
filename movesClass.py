@@ -1,3 +1,8 @@
+from pos import BoardPos
+from board import getBoard
+import config
+import copy
+
 class Direction():
     up = BoardPos(-1, 0)
     down = BoardPos(1, 0)
@@ -20,6 +25,10 @@ class Move():
         for i in range(self.amt):
             for direction in self.directions:
                 currentPos += direction
-            moves.append(currentPos)
-        print(moves)
+            if currentPos.exceedsBoard():
+                break
+            square = getBoard().getSquare(currentPos)
+            if square.piece:
+                break
+            moves.append(square)
         return moves

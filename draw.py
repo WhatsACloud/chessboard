@@ -5,6 +5,7 @@ from config import SQUARE_LENGTH
 BLACK = "#076e00"
 WHITE = "#ffffe3"
 ORANGE = "#ffbb00"
+GREY = "#cfcfcf"
 
 def switchColor(color):
     if color == BLACK:

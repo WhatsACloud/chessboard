@@ -6,37 +6,17 @@ from board import getBoard
 import canvas
 import draw
 import copy
-from moves import Direction, Move
-
-class PieceConfig():
-    def __init__(self, moves, imgName):
-        self.imgName = imgName
-        self.moves = moves
-    def getMoves(self):
-        moves = []
-        for move in self.moves:
-            move.calc(boardPos)
-
-class pieceTypes(): # basically an enum BUUUUUUUT it also stores the image name lol
-    blackBishop = "black_bishop"
-    whiteBishop = "white_bishop"
-    blackKnight = "black_knight"
-    whiteKnight = "white_knight"
-    blackKing = "black_king"
-    whiteKing = "white_king"
-    blackQueen = "black_queen"
-    whiteQueen = "white_queen"
-    blackRook = "black_rook"
-    whiteRook = "white_rook"
-
-def getPieceImg(imgName):
-    return f"assets/{imgName}.png"
+from movesClass import Direction, Move
 
 mouseX, mouseY = 0, 0
 
+class Color():
+    black = "black"
+    white = "white"
+
 class PieceImg(): # display
-    def __init__(self, pieceType, piece): # where piece is the parent class
-        self.img = tk.PhotoImage(file=getPieceImg(pieceType))
+    def __init__(self, color, piece): # where piece is the parent class
+        self.img = tk.PhotoImage(file=PieceImg.getPieceImg(color, piece.imgName))
         self.imgObj = canvas.canvas.create_image(60, 60, image=self.img)
         self.piece = piece
         self.square = getBoard().getSquare(piece.boardPos)
@@ -69,35 +49,42 @@ class PieceImg(): # display
         # canvas.canvas.moveto(self.imgObj, x, y)
     def moveto(self, pos):
         canvas.canvas.moveto(self.imgObj, pos.x, pos.y)
-    def snap(self):
-        self.moveto(getBoard().getPosFromBoardPos(self.piece.boardPos))
-    def unselect(self):
-        getBoard().selected = None
-        self.square.color(self.square.origColor)
     def select(self, e):
-        getBoard().unselect()
-        getBoard().selected = self
-        self.square.color(draw.ORANGE)
-        print(getBoard().selected)
+        getBoard().select(self.piece)
+    @staticmethod
+    def getPieceImg(color, imgName):
+        return f"assets/{color}_{imgName}.png"
 
 class Piece():
-    def __init__(self, pieceType, boardPos):
+    def __init__(self, boardPos, color):
         self.boardPos = boardPos
-        self.pieceImg = PieceImg(pieceType, self)
+        self.pieceImg = PieceImg(color, self)
+        self.color = color
         self.updateBoard()
+        self.snap()
     def updateBoard(self):
         getBoard().getSquare(self.boardPos).piece = self
+    def unselect(self):
+        self.pieceImg.square.color(self.pieceImg.square.origColor)
     def getMoves(self):
         moves = []
         for move in self.moves:
-            moves += move.calc(boardPos)
+            moves += move.calc(self.boardPos)
         return moves
     def setMoves(self, moves):
         self.moves = moves
+    def snap(self, boardPos=None):
+        if boardPos == None:
+            boardPos = self.boardPos
+        self.pieceImg.moveto(getBoard().getPosFromBoardPos(boardPos))
+        self.pieceImg.square = getBoard().getSquare(boardPos)
+        self.boardPos = boardPos
+        self.pieceImg.square.piece = self
 
 class Rook(Piece):
-    def __init__(self, pieceType, boardPos):
-        super().__init__(pieceType, boardPos)
+    def __init__(self, boardPos, color):
+        self.imgName = "rook"
+        super().__init__(boardPos, color)
         self.setMoves([
             Move([Direction.up]),
             Move([Direction.down]),
@@ -105,8 +92,20 @@ class Rook(Piece):
             Move([Direction.right]),
         ])
 
+class Bishop(Piece):
+    def __init__(self, boardPos, color):
+        self.imgName = "bishop"
+        super().__init__(boardPos, color)
+        self.setMoves([
+            Move([Direction.up, Direction.left]),
+            Move([Direction.left, Direction.down]),
+            Move([Direction.down, Direction.right]),
+            Move([Direction.right, Direction.up]),
+        ])
+
 class Pawn(Piece):
-    def __init__(self, pieceType, boardPos):
-        super().__init__(pieceType, boardPos)
+    def __init__(self, boardPos, color):
+        self.imgName = "pawn"
+        super().__init__(boardPos, color)
         self.moved = False
         self.setMoves()
