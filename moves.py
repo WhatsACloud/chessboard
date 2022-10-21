@@ -1,5 +1,7 @@
 from movesClass import Move, Direction
 
+'a'
+
 Bishop = Moves()
 Bishop.add(
     Move([Direction.up, Direction.left]),
