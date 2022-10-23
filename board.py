@@ -73,18 +73,20 @@ class Board(): # rows and columns start at 0, not 1
             if move.boardPos == boardPos:
                 return True
         return False
+    def movePiece(self, newSquare, piece):
+        if not self.validate(newSquare.boardPos, piece):
+            return
+        piece.square.piece = None
+        piece.snap(newSquare.boardPos)
     def moveSelected(self, boardPos):
         selected = self.selected
-        if not self.validate(boardPos, selected):
-            return
-        square = selected.pieceImg.square
+        square = self.getSquare(boardPos)
         self.unselect()
-        selected.snap(boardPos)
-        square.piece = None
+        self.movePiece(square, selected)
     def select(self, piece):
         self.unselect()
         self.selected = piece
-        piece.pieceImg.square.color(draw.ORANGE)
+        piece.square.color(draw.ORANGE)
         self.possibleMoves = piece.getMoves()
         for square in self.possibleMoves:
             square.highlight()

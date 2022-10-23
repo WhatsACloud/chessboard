@@ -9,6 +9,7 @@ import config
 def main():
     window = tk.Tk()
     window.geometry(f"{config.WIDTH}x{config.HEIGHT}")
+    window.state('zoomed')
     canvas.initCanvas(window)
     bd.initBoard(Pos(config.startX, config.startY))
 
