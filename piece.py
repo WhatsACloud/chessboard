@@ -6,7 +6,6 @@ from board import getBoard
 import canvas
 import draw
 import copy
-from movesClass import Direction, Move
 
 mouseX, mouseY = 0, 0
 
@@ -32,14 +31,14 @@ class Piece():
     def getMoves(self):
         moves = []
         for move in self.moves:
-            moves += move.calc(self.boardPos)
+            moves += move.calc(self)
         return moves
     def setMoves(self, moves):
         self.moves = moves
     def snap(self, boardPos=None):
         if boardPos == None:
             boardPos = self.boardPos
-        self.moveto(getBoard().getPosFromBoardPos(boardPos))
+        self.movetoPos(getBoard().getPosFromBoardPos(boardPos))
         self.square = getBoard().getSquare(boardPos)
         self.boardPos = boardPos
         self.square.piece = self
@@ -61,7 +60,6 @@ class Piece():
         getBoard().moveSelected(square.boardPos)
         self.snap()
     def drag(self, e):
-        print('draggin')
         self.dragging = True
         global mouseX, mouseY
         x, y = e.x, e.y
@@ -73,40 +71,10 @@ class Piece():
         mouseX, mouseY = x, y
         canvas.canvas.move(self.imgObj, moveX, moveY)
         # canvas.canvas.moveto(self.imgObj, x, y)
-    def moveto(self, pos):
+    def movetoPos(self, pos):
         canvas.canvas.moveto(self.imgObj, pos.x, pos.y)
     def select(self, e):
         getBoard().select(self)
     @staticmethod
     def getPieceImg(color, imgName):
         return f"assets/{color}_{imgName}.png"
-
-
-class Rook(Piece):
-    def __init__(self, boardPos, color):
-        self.imgName = "rook"
-        super().__init__(boardPos, color)
-        self.setMoves([
-            Move([Direction.up]),
-            Move([Direction.down]),
-            Move([Direction.left]),
-            Move([Direction.right]),
-        ])
-
-class Bishop(Piece):
-    def __init__(self, boardPos, color):
-        self.imgName = "bishop"
-        super().__init__(boardPos, color)
-        self.setMoves([
-            Move([Direction.up, Direction.left]),
-            Move([Direction.left, Direction.down]),
-            Move([Direction.down, Direction.right]),
-            Move([Direction.right, Direction.up]),
-        ])
-
-class Pawn(Piece):
-    def __init__(self, boardPos, color):
-        self.imgName = "pawn"
-        super().__init__(boardPos, color)
-        self.moved = False
-        self.setMoves()

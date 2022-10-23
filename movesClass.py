@@ -4,24 +4,24 @@ import config
 import copy
 
 class Direction():
-    up = BoardPos(-1, 0)
-    down = BoardPos(1, 0)
-    left = BoardPos(0, -1)
-    right = BoardPos(0, 1)
+    up = BoardPos(0, -1)
+    down = BoardPos(0, 1)
+    left = BoardPos(-1, 0)
+    right = BoardPos(1, 0)
 
 class Move():
     def __init__(self, directions, cond=None, amt=config.BOARD_LENGTH):
         self.directions = directions
         self.cond = cond
         self.amt = amt
-    def can(self, boardPos):
+    def can(self, piece):
         if self.cond:
-            return self.cond(boardPos)
+            return self.cond(piece)
         return True
-    def calc(self, boardPos):
-        if not self.can(boardPos): return []
+    def calc(self, piece):
+        if not self.can(piece): return []
         moves = []
-        currentPos = copy.deepcopy(boardPos)
+        currentPos = copy.deepcopy(piece.boardPos)
         for i in range(self.amt):
             for direction in self.directions:
                 currentPos += direction
@@ -32,3 +32,9 @@ class Move():
                 break
             moves.append(square)
         return moves
+    
+def changeAmts(moves, amt):
+    arr = []
+    for move in moves:
+        arr.append(Move(move.directions, amt=1))
+    return arr

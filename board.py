@@ -63,7 +63,7 @@ class Square():
 class Board(): # rows and columns start at 0, not 1
     def __init__(self, startPos):
         self.startPos = startPos
-        self.board = self.getBoard(startPos)
+        self.board = self.createBoard(startPos)
         self.possibleMoves = []
         self.selected = None
         # canvas.canvas.bind("<Button-1>", self.click)
@@ -78,6 +78,8 @@ class Board(): # rows and columns start at 0, not 1
             return
         piece.square.piece = None
         piece.snap(newSquare.boardPos)
+        if piece.imgName == "pawn": # very bad code but I'll only change it if another piece is like this
+            piece.notMoved = False
     def moveSelected(self, boardPos):
         selected = self.selected
         square = self.getSquare(boardPos)
@@ -112,7 +114,7 @@ class Board(): # rows and columns start at 0, not 1
             boardPos = round(pos / Pos(config.SQUARE_LENGTH, config.SQUARE_LENGTH)) - BoardPos(2, 2)
             return self.board[int(boardPos.x)][int(boardPos.y)]
         return None
-    def getBoard(self, startPos):
+    def createBoard(self, startPos):
         color = draw.BLACK
         board = []
         for row in range(config.BOARD_LENGTH):
