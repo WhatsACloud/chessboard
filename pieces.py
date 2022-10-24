@@ -1,5 +1,6 @@
 from movesClass import Direction, Move, changeAmts
-from piece import Piece, Color
+from piece import Piece
+from config import Color
 
 diagonal = [
     Move([Direction.up, Direction.left]),

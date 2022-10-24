@@ -21,6 +21,7 @@ class Move():
     def calc(self, piece):
         if not self.can(piece): return []
         moves = []
+        takes = []
         currentPos = copy.deepcopy(piece.boardPos)
         for i in range(self.amt):
             for direction in self.directions:
@@ -29,9 +30,11 @@ class Move():
                 break
             square = getBoard().getSquare(currentPos)
             if square.piece:
+                if square.piece.color != piece.color:
+                    takes.append(square)
                 break
             moves.append(square)
-        return moves
+        return moves, takes
     
 def changeAmts(moves, amt):
     arr = []

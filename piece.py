@@ -9,30 +9,35 @@ import copy
 
 mouseX, mouseY = 0, 0
 
-class Color():
-    black = "black"
-    white = "white"
-
 class Piece():
     def __init__(self, boardPos, color):
         self.boardPos = boardPos
         self.img = tk.PhotoImage(file=Piece.getPieceImg(color, self.imgName))
-        self.imgObj = canvas.canvas.create_image(60, 60, image=self.img)
+        self.imgObj = None
+        self.drawImg()
         self.square = getBoard().getSquare(boardPos)
         self.dragging = False
         self.bindEvents()
         self.color = color
         self.updateBoard()
         self.snap()
+    def drawImg(self):
+        self.imgObj = canvas.canvas.create_image(60, 60, image=self.img)
+    def deleteImg(self):
+        canvas.canvas.delete(self.imgObj)
+        self.imgObj = None
     def updateBoard(self):
         getBoard().getSquare(self.boardPos).piece = self
     def unselect(self):
         self.square.color(self.square.origColor)
     def getMoves(self):
         moves = []
+        takes = []
         for move in self.moves:
-            moves += move.calc(self)
-        return moves
+            newMoves, newTakes = move.calc(self)
+            moves += newMoves
+            takes += newTakes
+        return moves, takes
     def setMoves(self, moves):
         self.moves = moves
     def snap(self, boardPos=None):
@@ -41,12 +46,14 @@ class Piece():
         self.movetoPos(getBoard().getPosFromBoardPos(boardPos))
         self.square = getBoard().getSquare(boardPos)
         self.boardPos = boardPos
-        self.square.piece = self
+        self.square.setPiece(self)
         self.dragging = False
     def bindEvent(self, event, func):
         canvas.canvas.tag_bind(self.imgObj, event, func)
+    def unbindTakenEvent(self):
+        canvas.canvas.tag_unbind(self.imgObj, "<Button-1>")
+        self.bindEvent('<Button-1>', self.select)
     def bindEvents(self):
-        pass
         self.bindEvent('<Button1-Motion>', self.drag)
         self.bindEvent('<Button1-ButtonRelease>', self.drop)
         self.bindEvent('<Button-1>', self.select)

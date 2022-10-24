@@ -10,7 +10,7 @@ import config
 def setupPieces(color):
     firstRow, secondRow = None, None
     end = config.BOARD_LENGTH-1
-    if color == piece.Color.black:
+    if color == config.Color.black:
         firstRow, secondRow = 0, 1
     else:
         firstRow, secondRow = end, end-1
@@ -32,8 +32,10 @@ def main():
     canvas.initCanvas(window)
     bd.initBoard(Pos(config.startX, config.startY))
 
-    setupPieces(piece.Color.black)
-    setupPieces(piece.Color.white)
+    # setupPieces(config.Color.black)
+    # setupPieces(config.Color.white)
+    pieces.Rook(BoardPos(4, 4), config.Color.black)
+    pieces.Knight(BoardPos(4, 3), config.Color.white)
     window.mainloop()
 
 if __name__ == "__main__":

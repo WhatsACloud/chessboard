@@ -5,3 +5,8 @@ startX, startY = 100, 100
 
 # window config
 WIDTH, HEIGHT = 200, 200
+
+# probably a bad idea
+class Color():
+    black = "black"
+    white = "white"
