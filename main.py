@@ -34,8 +34,10 @@ def main():
 
     # setupPieces(config.Color.black)
     # setupPieces(config.Color.white)
-    pieces.Rook(BoardPos(4, 4), config.Color.black)
-    pieces.Knight(BoardPos(4, 3), config.Color.white)
+    pieces.Pawn(BoardPos(6, 4), config.Color.white)
+    pieces.Pawn(BoardPos(5, 4), config.Color.black)
+    # pieces.Rook(BoardPos(4, 4), config.Color.black)
+    # pieces.Knight(BoardPos(4, 3), config.Color.white)
     window.mainloop()
 
 if __name__ == "__main__":

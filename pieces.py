@@ -1,5 +1,6 @@
 from movesClass import Direction, Move, changeAmts
 from piece import Piece
+from pos import BoardPos
 from config import Color
 
 diagonal = [
@@ -28,25 +29,43 @@ class Bishop(Piece):
         super().__init__(boardPos, color)
         self.setMoves(diagonal)
 
+def cond(piece, board, square):
+    if piece.notMoved:
+        return True
+    return False
+
+def enPassantCond(piece, board, newSquare):
+    behind = 1
+    if piece.color == Color.white:
+        behind = -1
+    squareBehind = board.getSquare(newSquare.boardPos - BoardPos(0, behind))
+    print(squareBehind.boardPos, newSquare.boardPos)
+    if squareBehind.piece and squareBehind.piece.imgName == "pawn" and squareBehind.piece.canEnPassant:
+        return True
+    return False
+
 class Pawn(Piece):
     def __init__(self, boardPos, color):
         self.imgName = "pawn"
         super().__init__(boardPos, color)
         self.moved = False
         self.notMoved = True
-        direction = None
+        self.canEnPassant = True
+        direction = Direction.up
         if color == Color.black:
             direction = Direction.down
-        else:
-            direction = Direction.up
-        def cond(piece):
-            if piece.notMoved:
-                return True
-            return False
-        self.setMoves([
-            Move([direction], amt=1),
-            Move([direction * 2], amt=1, cond=cond)
-        ])
+        self.setMoves(
+            [
+                Move([direction], amt=1),
+                Move([direction], amt=2, cond=cond)
+            ],
+            [
+                Move([direction, Direction.left], amt=1),
+                Move([direction, Direction.right], amt=1),
+                Move([direction, Direction.left], amt=1, cond=enPassantCond),
+                Move([direction, Direction.right], amt=1, cond=enPassantCond),
+            ]
+        )
 
 class Queen(Piece):
     def __init__(self, boardPos, color):

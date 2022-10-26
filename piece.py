@@ -34,12 +34,20 @@ class Piece():
         moves = []
         takes = []
         for move in self.moves:
-            newMoves, newTakes = move.calc(self)
+            newMoves = move.calc(self)
             moves += newMoves
+        for take in self.takes:
+            newTakes = take.calc(self, True)
             takes += newTakes
+        moves = list(set(moves))
+        takes = list(set(takes))
         return moves, takes
-    def setMoves(self, moves):
+    def setMoves(self, moves, takes=None):
         self.moves = moves
+        if takes == None:
+            self.takes = moves
+            return
+        self.takes = takes
     def snap(self, boardPos=None):
         if boardPos == None:
             boardPos = self.boardPos
@@ -50,9 +58,6 @@ class Piece():
         self.dragging = False
     def bindEvent(self, event, func):
         canvas.canvas.tag_bind(self.imgObj, event, func)
-    def unbindTakenEvent(self):
-        canvas.canvas.tag_unbind(self.imgObj, "<Button-1>")
-        self.bindEvent('<Button-1>', self.select)
     def bindEvents(self):
         self.bindEvent('<Button1-Motion>', self.drag)
         self.bindEvent('<Button1-ButtonRelease>', self.drop)
@@ -64,8 +69,14 @@ class Piece():
         mouseX, mouseY = 0, 0
         pos = Pos(e.x, e.y)
         square = getBoard().getSquareWhichPosInside(pos)
-        getBoard().moveSelected(square.boardPos)
+        if square and square.piece:
+            square.took(None)
+        else:
+            getBoard().moveSelected(square.boardPos)
         self.snap()
+        if getBoard().lastHoveredOver:
+            getBoard().lastHoveredOver.leave()
+        getBoard().lastHoveredOver = None
     def drag(self, e):
         self.dragging = True
         global mouseX, mouseY
@@ -77,6 +88,14 @@ class Piece():
             moveY = 0
         mouseX, mouseY = x, y
         canvas.canvas.move(self.imgObj, moveX, moveY)
+        
+        square = getBoard().getSquareWhichPosInside(Pos(mouseX, mouseY))
+        if not square or getBoard().lastHoveredOver == square:
+            return
+        if getBoard().lastHoveredOver:
+            getBoard().lastHoveredOver.leave()
+        square.enter()
+        getBoard().lastHoveredOver = square
         # canvas.canvas.moveto(self.imgObj, x, y)
     def movetoPos(self, pos):
         canvas.canvas.moveto(self.imgObj, pos.x, pos.y)

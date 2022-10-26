@@ -13,6 +13,7 @@ for sake of simplicity:
 class HighlightType(Enum):
     Move = 1
     Take = 2
+    Hover = 3
 
 board = None
 def getBoard():
@@ -25,12 +26,18 @@ class Square():
         self.origColor = color
         self.canvasObj = None
         self.highlighted = False
+        self.squareHighlight = None
         self.piece = None
         self.bindEvents()
     def bindEvent(self, evt, func):
         canvas.canvas.tag_bind(self.id, evt, func)
     def bindEvents(self):
         self.bindEvent("<Button-1>", self.click)
+    def enter(self):
+        if board.selected and board.selected.dragging and not self.squareHighlight:
+            self.drawSquare()
+    def leave(self):
+        self.deleteSquare()
     def setPiece(self, piece):
         self.piece = piece
     def click(self, e):
@@ -39,15 +46,17 @@ class Square():
             return
         board.moveSelected(self.boardPos)
     def drawCircle(self, highlightType):
+        startPos = board.getPosFromBoardPos(self.boardPos)
         circleLength = config.SQUARE_LENGTH / 4
         fill = draw.GREY
         width = 1
+        if highlightType == HighlightType.Hover:
+            return
         if highlightType == HighlightType.Take:
             circleLength *= 3.5
             fill = ''
             width = 5
         offset = config.SQUARE_LENGTH / 2 - circleLength / 2
-        startPos = board.getPosFromBoardPos(self.boardPos)
         self.canvasObj = canvas.canvas.create_oval(
             startPos.x + offset,
             startPos.y + offset,
@@ -59,21 +68,41 @@ class Square():
         )
     def deleteCircle(self):
         if self.canvasObj:
-            canvas.canvas.tag_unbind(self.canvasObj, "<Button-1>")
+            # canvas.canvas.tag_unbind(self.canvasObj, "<Button-1>")
             canvas.canvas.delete(self.canvasObj)
             self.canvasObj = None
+    def drawSquare(self):
+        startPos = board.getPosFromBoardPos(self.boardPos)
+        self.squareHighlight = canvas.canvas.create_rectangle(
+            startPos.x,
+            startPos.y,
+            startPos.x + config.SQUARE_LENGTH,
+            startPos.y + config.SQUARE_LENGTH,
+            outline=draw.LIGHTGREY,
+            width=5,
+        )
+    def deleteSquare(self):
+        if self.squareHighlight:
+            # canvas.canvas.tag_unbind(self.canvasObj, "<Button-1>")
+            canvas.canvas.delete(self.squareHighlight)
+            self.squareHighlight = None
     def highlight(self, highlightType):
         self.highlighted = True
         self.drawCircle(highlightType)
-        if highlightType == HighlightType.Move:
-            canvas.canvas.tag_bind(self.canvasObj, "<Button-1>", self.click)
-            return
-        self.piece.bindEvent("<Button-1>", self.took)
-        canvas.canvas.tag_bind(self.canvasObj, "<Button-1>", self.took)
+        match highlightType:
+            case HighlightType.Move:
+                canvas.canvas.tag_bind(self.canvasObj, "<Button-1>", self.click)
+            case HighlightType.Take:
+                canvas.canvas.tag_bind(self.canvasObj, "<Button-1>", self.took)
+                if self.piece:
+                    self.piece.bindEvent("<Button-1>", self.took)
+                    return
+                self.bindEvent("<Button-1>", self.took)
     def unhighlight(self):
         self.highlighted = False
         if self.piece:
-            self.piece.unbindTakenEvent()
+            canvas.canvas.tag_unbind(self.piece.imgObj, "<Button-1>")
+            self.piece.bindEvent('<Button-1>', self.piece.select)
         self.deleteCircle()
     def took(self, e):
         board.takenBySelected(self)
@@ -90,6 +119,7 @@ class Board(): # rows and columns start at 0, not 1
             config.Color.white: [],
         }
         self.selected = None
+        self.lastHoveredOver = None
         # canvas.canvas.bind("<Button-1>", self.click)
         # self.drawnBoard = draw.drawBoard(canvas, boardLength, config.SQUARE_LENGTH, startPos)
     def validate(self, boardPos, isTaking):
@@ -107,7 +137,10 @@ class Board(): # rows and columns start at 0, not 1
         piece.snap(newSquare.boardPos)
         if piece.imgName == "pawn": # bad code but I'll only change it if another piece is like this
             piece.notMoved = False
+            piece.canEnPassant = True
     def takePiece(self, piece):
+        if not self.validate(piece.boardPos, True):
+            return
         piece.deleteImg()
         self.taken[piece.color].append(piece)
         piece.square.setPiece(None)
