@@ -28,7 +28,7 @@ class CalcIterator:
         square = getBoard().getSquare(self.currentPos)
         return square
 
-class Move():
+class Move:
     def __init__(self, directions, cond=None, amt=config.BOARD_LENGTH):
         self.directions = directions
         self.cond = cond
@@ -37,21 +37,37 @@ class Move():
         if self.cond:
             return self.cond(piece, getBoard(), square)
         if square.piece:
-            return True
-        return False
-    def calc(self, piece, isTake=False):
+            return False
+        return True
+    def calc(self, piece):
         moves = []
         currentPos = copy.deepcopy(piece.boardPos)
-        if isTake:
-            for square in CalcIterator(self.directions, currentPos, self.amt):
-                if self.can(piece, square):
-                    break
-        else:
-            for square in CalcIterator(self.directions, currentPos, self.amt):
-                if square.piece or not self.can(piece, square):
-                    break
-                moves.append(square)
+        for square in CalcIterator(self.directions, currentPos, self.amt):
+            if square.piece or not self.can(piece, square):
+                break
+            moves.append(square)
         return moves
+
+class Take(Move):
+    def __init__(self, directions, cond=None, amt=config.BOARD_LENGTH, pieceOffset=BoardPos(0, 0)):
+        super().__init__(directions, cond, amt)
+        self.pieceOffset = pieceOffset
+    def getPieceToTake(self, square):
+        pieceSquare = getBoard().getSquare(square.boardPos + self.pieceOffset)
+        if pieceSquare:
+            return pieceSquare.piece
+        return None
+    def calc(self, piece):
+        takes = []
+        currentPos = copy.deepcopy(piece.boardPos)
+        for square in CalcIterator(self.directions, currentPos, self.amt):
+            pieceToTake = self.getPieceToTake(square)
+            print(pieceToTake)
+            if pieceToTake and self.can(pieceToTake, square):
+                square.pieceToTake = pieceToTake
+                takes.append(square)
+                break
+        return takes
     
 def changeAmts(moves, amt):
     arr = []

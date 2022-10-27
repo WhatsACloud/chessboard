@@ -27,6 +27,7 @@ class Square():
         self.canvasObj = None
         self.highlighted = False
         self.squareHighlight = None
+        self.pieceToTake = None # IF it is an available square to take (has circle on it), this is the piece that will be taken
         self.piece = None
         self.bindEvents()
     def bindEvent(self, evt, func):
@@ -100,11 +101,12 @@ class Square():
                 self.bindEvent("<Button-1>", self.took)
     def unhighlight(self):
         self.highlighted = False
+        self.pieceToTake = None
         if self.piece:
             canvas.canvas.tag_unbind(self.piece.imgObj, "<Button-1>")
             self.piece.bindEvent('<Button-1>', self.piece.select)
         self.deleteCircle()
-    def took(self, e):
+    def took(self, e=None):
         board.takenBySelected(self)
     def color(self, color):
         canvas.canvas.itemconfig(self.id, fill=color, outline=color)
@@ -122,15 +124,20 @@ class Board(): # rows and columns start at 0, not 1
         self.lastHoveredOver = None
         # canvas.canvas.bind("<Button-1>", self.click)
         # self.drawnBoard = draw.drawBoard(canvas, boardLength, config.SQUARE_LENGTH, startPos)
-    def validate(self, boardPos, isTaking):
-        arr = self.possibleMoves
+    def validate(self, boardPos, isTaking=False):
         if isTaking:
-            arr = self.possibleTakes
-        for move in arr:
+            for take in self.possibleTakes:
+                print(take.boardPos)
+                if (take.pieceToTake and take.pieceToTake.boardPos == boardPos) or take.boardPos == boardPos: # ahem
+                    return True
+            return False
+        for move in self.possibleMoves:
             if move.boardPos == boardPos:
                 return True
         return False
+    # def movePiece(self, newSquare, piece, isTaking=False):
     def movePiece(self, newSquare, piece, isTaking=False):
+        # if not self.validate(newSquare.boardPos, isTaking):
         if not self.validate(newSquare.boardPos, isTaking):
             return
         piece.square.setPiece(None)
@@ -140,10 +147,11 @@ class Board(): # rows and columns start at 0, not 1
             piece.canEnPassant = True
     def takePiece(self, piece):
         if not self.validate(piece.boardPos, True):
-            return
+            return False
         piece.deleteImg()
         self.taken[piece.color].append(piece)
         piece.square.setPiece(None)
+        return True
     def moveSelected(self, boardPos):
         selected = self.selected
         square = self.getSquare(boardPos)
@@ -151,9 +159,10 @@ class Board(): # rows and columns start at 0, not 1
         self.movePiece(square, selected)
     def takenBySelected(self, square):
         selected = self.selected
-        self.unselect()
-        self.takePiece(square.piece)
-        self.movePiece(square, selected, True)
+        pieceToTake = square.pieceToTake
+        if self.takePiece(pieceToTake):
+            self.unselect()
+            self.movePiece(square, selected, True)
     def select(self, piece):
         self.unselect()
         self.selected = piece

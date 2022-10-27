@@ -3,6 +3,7 @@ import types
 
 from pos import Pos, BoardPos
 from board import getBoard
+from movesClass import Take, Move
 import canvas
 import draw
 import copy
@@ -37,7 +38,7 @@ class Piece():
             newMoves = move.calc(self)
             moves += newMoves
         for take in self.takes:
-            newTakes = take.calc(self, True)
+            newTakes = take.calc(self)
             takes += newTakes
         moves = list(set(moves))
         takes = list(set(takes))
@@ -45,7 +46,9 @@ class Piece():
     def setMoves(self, moves, takes=None):
         self.moves = moves
         if takes == None:
-            self.takes = moves
+            self.takes = []
+            for move in self.moves:
+                self.takes.append(Take(move.directions, cond=move.cond, amt=move.amt))
             return
         self.takes = takes
     def snap(self, boardPos=None):
@@ -70,7 +73,7 @@ class Piece():
         pos = Pos(e.x, e.y)
         square = getBoard().getSquareWhichPosInside(pos)
         if square and square.piece:
-            square.took(None)
+            square.took()
         else:
             getBoard().moveSelected(square.boardPos)
         self.snap()

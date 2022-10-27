@@ -28,7 +28,7 @@ def setupPieces(color):
 def main():
     window = tk.Tk()
     window.geometry(f"{config.WIDTH}x{config.HEIGHT}")
-    window.state('zoomed')
+    # window.state('zoomed')
     canvas.initCanvas(window)
     bd.initBoard(Pos(config.startX, config.startY))
 
@@ -36,6 +36,7 @@ def main():
     # setupPieces(config.Color.white)
     pieces.Pawn(BoardPos(6, 4), config.Color.white)
     pieces.Pawn(BoardPos(5, 4), config.Color.black)
+    pieces.Knight(BoardPos(5, 2), config.Color.black)
     # pieces.Rook(BoardPos(4, 4), config.Color.black)
     # pieces.Knight(BoardPos(4, 3), config.Color.white)
     window.mainloop()
