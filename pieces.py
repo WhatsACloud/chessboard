@@ -29,11 +29,11 @@ class Bishop(Piece):
         super().__init__(boardPos, color)
         self.setMoves(diagonal)
 
-def cond(toTake, board, square):
+def cond(toTake):
     return toTake.notMoved
 
-def canEnPassant(toTake, board, square):
-    return toTake.imgName == "pawn"
+def canEnPassant(toTake):
+    return toTake.imgName == "pawn" and toTake.canEnPassant
 
 class Pawn(Piece):
     def __init__(self, boardPos, color):

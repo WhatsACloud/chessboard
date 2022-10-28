@@ -33,9 +33,9 @@ class Move:
         self.directions = directions
         self.cond = cond
         self.amt = amt
-    def can(self, piece, square):
+    def can(self, origPiece, square):
         if self.cond:
-            return self.cond(piece, getBoard(), square)
+            return self.cond(origPiece)
         if square.piece:
             return False
         return True
@@ -52,6 +52,12 @@ class Take(Move):
     def __init__(self, directions, cond=None, amt=config.BOARD_LENGTH, pieceOffset=BoardPos(0, 0)):
         super().__init__(directions, cond, amt)
         self.pieceOffset = pieceOffset
+    def canTake(self, piece, origPiece):
+        if piece.color == origPiece.color:
+            return False
+        if self.cond:
+            return self.cond(piece)
+        return True
     def getPieceToTake(self, square):
         pieceSquare = getBoard().getSquare(square.boardPos + self.pieceOffset)
         if pieceSquare:
@@ -62,8 +68,7 @@ class Take(Move):
         currentPos = copy.deepcopy(piece.boardPos)
         for square in CalcIterator(self.directions, currentPos, self.amt):
             pieceToTake = self.getPieceToTake(square)
-            print(pieceToTake)
-            if pieceToTake and self.can(pieceToTake, square):
+            if pieceToTake and self.canTake(pieceToTake, piece):
                 square.pieceToTake = pieceToTake
                 takes.append(square)
                 break
