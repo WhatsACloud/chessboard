@@ -1,9 +1,11 @@
 import tkinter as tk
 
-import board as bd
+from board import initBoard
 from pos import Pos, BoardPos
+from square import Square
 import pieces
 import piece
+import draw
 import canvas
 import config
 
@@ -25,12 +27,26 @@ def setupPieces(color):
     for i in range(config.BOARD_LENGTH):
         pieces.Pawn(BoardPos(i, secondRow), color)
 
+def createBoard(board):
+    color = draw.BLACK
+    boardArr = []
+    for row in range(config.BOARD_LENGTH):
+        color = draw.switchColor(color)
+        boardArr.append([])
+        for col in range(config.BOARD_LENGTH):
+            boardPos = BoardPos(row, col)
+            square = Square(board.getPosFromBoardPos(boardPos), boardPos, color)
+            color = draw.switchColor(color)
+            boardArr[row].append(square)
+    board.board = boardArr
+
 def main():
     window = tk.Tk()
     window.geometry(f"{config.WIDTH}x{config.HEIGHT}")
     # window.state('zoomed')
     canvas.initCanvas(window)
-    bd.initBoard(Pos(config.startX, config.startY))
+    board = initBoard(Pos(config.startX, config.startY), Square)
+    createBoard(board)
 
     # setupPieces(config.Color.black)
     # setupPieces(config.Color.white)
