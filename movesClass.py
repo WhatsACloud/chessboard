@@ -1,5 +1,5 @@
 from pos import BoardPos
-from board import getBoard
+from globals import globals
 import config
 import copy
 
@@ -25,7 +25,7 @@ class CalcIterator:
             self.currentPos += direction
         if self.currentPos.exceedsBoard():
             raise StopIteration
-        square = getBoard().getSquare(self.currentPos)
+        square = globals.board.getSquare(self.currentPos)
         return square
 
 class Move:
@@ -59,7 +59,7 @@ class Take(Move):
             return self.cond(piece)
         return True
     def getPieceToTake(self, square):
-        pieceSquare = getBoard().getSquare(square.boardPos + self.pieceOffset)
+        pieceSquare = globals.board.getSquare(square.boardPos + self.pieceOffset)
         if pieceSquare:
             return pieceSquare.piece
         return None

@@ -1,19 +1,14 @@
 # Note: board array should be rows of columns
-from enum import Enum
 from pos import BoardPos, Pos
 import draw
 import config
-import canvas
-
-class HighlightType(Enum):
-    Move = 1
-    Take = 2
-    Hover = 3
+from square import Square
+from globals import globals, HighlightType
 
 class Board(): # rows and columns start at 0, not 1
     def __init__(self, startPos):
         self.startPos = startPos
-        self.board = None
+        self.board = self.createBoard()
         self.possibleMoves = []
         self.taken = {
             config.Color.black: [],
@@ -21,7 +16,7 @@ class Board(): # rows and columns start at 0, not 1
         }
         self.selected = None
         self.lastHoveredOver = None
-        # canvas.canvas.bind("<Button-1>", self.click)
+        # globals.canvas.bind("<Button-1>", self.click)
         # self.drawnBoard = draw.drawBoard(canvas, boardLength, config.SQUARE_LENGTH, startPos)
     def validate(self, boardPos, isTaking=False):
         if isTaking:
@@ -95,3 +90,16 @@ class Board(): # rows and columns start at 0, not 1
             boardPos = round(pos / Pos(config.SQUARE_LENGTH, config.SQUARE_LENGTH)) - BoardPos(2, 2)
             return self.board[int(boardPos.x)][int(boardPos.y)]
         return None
+    def createBoard(self):
+        color = draw.BLACK
+        length = config.BOARD_LENGTH
+        boardArr = []
+        for row in range(length):
+            color = draw.switchColor(color)
+            boardArr.append([])
+            for col in range(length):
+                boardPos = BoardPos(row, col)
+                square = Square(self.getPosFromBoardPos(boardPos), boardPos, color)
+                color = draw.switchColor(color)
+                boardArr[row].append(square)
+        return boardArr

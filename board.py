@@ -1,14 +1,9 @@
 from boardClass import Board
+from globals import globals
 """
 for sake of simplicity:
     Board starts at top left, which is the side where black is
 """
 
-board = None
-def getBoard():
-    return board
-
 def initBoard(startPos, Square):
-    global board
-    board = Board(startPos)
-    return board
+    globals.board = Board(startPos)
