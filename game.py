@@ -34,11 +34,9 @@ class Game():
         # setupPieces(config.Color.black)
         # setupPieces(config.Color.white)
 
-        pieces.King(BoardPos(1, 1), config.Color.black)
-        pieces.Queen(BoardPos(4, 4), config.Color.white)
-        pieces.Pawn(BoardPos(5, 3), config.Color.black)
+        pieces.Pawn(BoardPos(4, 5), config.Color.black)
         pieces.King(BoardPos(5, 5), config.Color.white)
-        pieces.Bishop(BoardPos(3, 3), config.Color.black)
+        pieces.King(BoardPos(0, 0), config.Color.black)
 
         # pieces.Rook(BoardPos(4, 4), config.Color.black)
         # pieces.Knight(BoardPos(4, 3), config.Color.white)

@@ -30,11 +30,11 @@ class Bishop(Piece):
         super().__init__(boardPos, color)
         self.setMoves(diagonal)
 
-def cond(toTake):
-    return toTake.notMoved
+def cond(piece):
+    return piece.notMoved
 
-def canEnPassant(toTake):
-    return toTake.imgName == "pawn" and toTake.canEnPassant
+def canEnPassant(toTake, piece):
+    return piece.imgName == "pawn" and toTake.imgName == "pawn" and toTake.canEnPassant
 
 class Pawn(Piece):
     def __init__(self, boardPos, color):
@@ -85,6 +85,16 @@ class King(Piece):
                 if len(allTakes) > 0:
                     return True
         return False
+    def wouldSelfBeChecked(self, origPiece, newSquare):
+        returnVal = False
+        origSquare = origPiece.square
+        newSquarePiece = newSquare.piece
+        origPiece.moveto(newSquare.boardPos)
+        if self.isChecked():
+            returnVal = True
+        origPiece.moveto(origSquare.boardPos)
+        newSquare.piece = newSquarePiece
+        return returnVal
         
 class Knight(Piece):
     def __init__(self, boardPos, color):

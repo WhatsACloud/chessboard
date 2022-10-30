@@ -13,6 +13,8 @@ class Square():
         self.pieceToTake = None # IF it is an available square to take (has circle on it), this is the piece that will be taken
         self.piece = None
         self.bindEvents()
+    def __repr__(self):
+        return f"[{self.boardPos.x}, {self.boardPos.y}]"
     def __hash__(self):
         return hash(self.boardPos)
     def bindEvent(self, evt, func):

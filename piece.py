@@ -35,6 +35,7 @@ class Piece():
         moves = set()
         takes = set()
         for move in self.moves:
+            # if self.imgName == "king":
             newMoves = move.calc(self)
             moves = moves | newMoves
         for take in self.takes:
@@ -46,7 +47,10 @@ class Piece():
         if takes == None:
             takes = []
             for move in self.moves:
-                takes.append(Take([direction * -1 for direction in move.directions], cond=move.cond, amt=move.amt))
+                takes.append(Take([direction for direction in move.directions], cond=move.cond, amt=move.amt))
+        for take in takes:
+            for i in range(len(take.directions)):
+                take.directions[i] *= -1
         self.takes = takes
         otherColor = config.Color.white
         if self.color == otherColor:

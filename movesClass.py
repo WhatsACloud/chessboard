@@ -38,20 +38,11 @@ class Move:
         for direction in self.directions:
             string += (str(direction) + ", ")
         return string[0:-2] + f", {self.amt}]"
-    def can(self, origPiece, square, isTaking=False):
-        if not isTaking and square.piece:
+    def can(self, origPiece, square):
+        if square.piece:
             return False
-        if isTaking and square.piece and square.piece.color == origPiece.color:
+        if globals.board.kings[origPiece.color].wouldSelfBeChecked(origPiece, square):
             return False
-        origSquare = origPiece.square
-        newSquarePiece = square.piece
-        origPiece.moveto(square.boardPos)
-        if globals.board.kings[origPiece.color].isChecked():
-            origPiece.moveto(origSquare.boardPos)
-            square.piece = newSquarePiece
-            return False
-        origPiece.moveto(origSquare.boardPos)
-        square.piece = newSquarePiece
         if self.cond:
             return self.cond(origPiece)
         return True
@@ -59,6 +50,7 @@ class Move:
         moves = set()
         currentPos = copy.deepcopy(piece.boardPos)
         for square in CalcIterator(self.directions, currentPos, self.amt):
+            # if square.boardPos == BoardPos(5, 4):
             if square.piece or not self.can(piece, square):
                 break
             moves.add(square)
@@ -72,7 +64,7 @@ class Take(Move):
         if piece.color == origPiece.color:
             return False
         if self.cond:
-            return self.cond(piece)
+            return self.cond(piece, origPiece)
         return True
     def getPieceToTake(self, square):
         pieceSquare = globals.board.getSquare(square.boardPos + self.pieceOffset)
@@ -84,7 +76,7 @@ class Take(Move):
         currentPos = copy.deepcopy(piece.boardPos)
         for square in CalcIterator(self.directions, currentPos, self.amt):
             pieceToTake = self.getPieceToTake(square)
-            if checkIsCheck and not self.can(piece, square, True):
+            if checkIsCheck and pieceToTake and globals.board.kings[piece.color].wouldSelfBeChecked(piece, pieceToTake.square):
                 break
             if pieceToTake and self.canTake(pieceToTake, piece):
                 square.pieceToTake = pieceToTake
