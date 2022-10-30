@@ -13,6 +13,8 @@ class Square():
         self.pieceToTake = None # IF it is an available square to take (has circle on it), this is the piece that will be taken
         self.piece = None
         self.bindEvents()
+    def __hash__(self):
+        return hash(self.boardPos)
     def bindEvent(self, evt, func):
         globals.canvas.tag_bind(self.id, evt, func)
     def bindEvents(self):

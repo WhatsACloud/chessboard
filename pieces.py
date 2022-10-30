@@ -2,6 +2,7 @@ from movesClass import Direction, Move, Take, changeAmts
 from piece import Piece
 from pos import BoardPos
 from config import Color
+from globals import globals
 
 diagonal = [
     Move([Direction.up, Direction.left]),
@@ -72,6 +73,18 @@ class King(Piece):
             changeAmts(diagonal, 1)
           + changeAmts(horizontal, 1)
         )
+        globals.board.kings[color] = self
+    def isChecked(self):
+        for pieceType in globals.attackAngles[self.color]:
+            takes = globals.attackAngles[self.color][pieceType]
+            for take in takes:
+                allTakes = []
+                for square in take.calc(self, False):
+                    if type(globals.board.getSquare(square.boardPos).piece) == pieceType:
+                        allTakes.append(square)
+                if len(allTakes) > 0:
+                    return True
+        return False
         
 class Knight(Piece):
     def __init__(self, boardPos, color):

@@ -33,19 +33,35 @@ class Move:
         self.directions = directions
         self.cond = cond
         self.amt = amt
-    def can(self, origPiece, square):
+    def __repr__(self):
+        string = "["
+        for direction in self.directions:
+            string += (str(direction) + ", ")
+        return string[0:-2] + f", {self.amt}]"
+    def can(self, origPiece, square, isTaking=False):
+        if not isTaking and square.piece:
+            return False
+        if isTaking and square.piece and square.piece.color == origPiece.color:
+            return False
+        origSquare = origPiece.square
+        newSquarePiece = square.piece
+        origPiece.moveto(square.boardPos)
+        if globals.board.kings[origPiece.color].isChecked():
+            origPiece.moveto(origSquare.boardPos)
+            square.piece = newSquarePiece
+            return False
+        origPiece.moveto(origSquare.boardPos)
+        square.piece = newSquarePiece
         if self.cond:
             return self.cond(origPiece)
-        if square.piece:
-            return False
         return True
     def calc(self, piece):
-        moves = []
+        moves = set()
         currentPos = copy.deepcopy(piece.boardPos)
         for square in CalcIterator(self.directions, currentPos, self.amt):
             if square.piece or not self.can(piece, square):
                 break
-            moves.append(square)
+            moves.add(square)
         return moves
 
 class Take(Move):
@@ -63,14 +79,18 @@ class Take(Move):
         if pieceSquare:
             return pieceSquare.piece
         return None
-    def calc(self, piece):
-        takes = []
+    def calc(self, piece, checkIsCheck=True):
+        takes = set()
         currentPos = copy.deepcopy(piece.boardPos)
         for square in CalcIterator(self.directions, currentPos, self.amt):
             pieceToTake = self.getPieceToTake(square)
+            if checkIsCheck and not self.can(piece, square, True):
+                break
             if pieceToTake and self.canTake(pieceToTake, piece):
                 square.pieceToTake = pieceToTake
-                takes.append(square)
+                takes.add(square)
+                break
+            if square.piece:
                 break
         return takes
     

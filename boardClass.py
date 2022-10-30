@@ -2,6 +2,7 @@
 from pos import BoardPos, Pos
 import draw
 import config
+import pieces
 from square import Square
 from globals import globals, HighlightType
 
@@ -15,13 +16,16 @@ class Board(): # rows and columns start at 0, not 1
             config.Color.white: [],
         }
         self.selected = None
+        self.kings = {
+            config.Color.white: None,
+            config.Color.black: None,
+        }
         self.lastHoveredOver = None
         # globals.canvas.bind("<Button-1>", self.click)
         # self.drawnBoard = draw.drawBoard(canvas, boardLength, config.SQUARE_LENGTH, startPos)
     def validate(self, boardPos, isTaking=False):
         if isTaking:
             for take in self.possibleTakes:
-                print(take.boardPos)
                 if (take.pieceToTake and take.pieceToTake.boardPos == boardPos) or take.boardPos == boardPos: # ahem
                     return True
             return False
@@ -30,15 +34,27 @@ class Board(): # rows and columns start at 0, not 1
                 return True
         return False
     # def movePiece(self, newSquare, piece, isTaking=False):
+    def nextTurn(self):
+        if globals.turn == config.Color.black:
+            globals.turn = config.Color.white
+            return
+        globals.turn = config.Color.black
     def movePiece(self, newSquare, piece, isTaking=False):
+        if not self.isCorrectColor(piece):
+            return False
         # if not self.validate(newSquare.boardPos, isTaking):
         if not self.validate(newSquare.boardPos, isTaking):
             return
-        piece.square.setPiece(None)
-        piece.snap(newSquare.boardPos)
+        origSquare = piece.square
+        piece.moveto(newSquare.boardPos)
+        if self.kings[piece.color].isChecked():
+            piece.moveto(origSquare.boardPos)
+            return
+        piece.snap()
         if piece.imgName == "pawn": # bad code but I'll only change it if another piece is like this
             piece.notMoved = False
             piece.canEnPassant = True
+        self.nextTurn()
     def takePiece(self, piece):
         if not self.validate(piece.boardPos, True):
             return False
@@ -57,7 +73,11 @@ class Board(): # rows and columns start at 0, not 1
         if self.takePiece(pieceToTake):
             self.unselect()
             self.movePiece(square, selected, True)
+    def isCorrectColor(self, piece):
+        return globals.turn == piece.color
     def select(self, piece):
+        if not self.isCorrectColor(piece):
+            return
         self.unselect()
         self.selected = piece
         piece.square.color(draw.ORANGE)

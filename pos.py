@@ -30,6 +30,8 @@ class Pos(): # actual pos
         return type(self) == type(other) and self.x == other.x and self.y == other.y
     def __deepcopy__(self, other):
         return type(self)(self.x, self.y)
+    def __hash__(self):
+        return hash((self.x, self.y))
     def inside(self, start, end):
         return start <= self <= end
     def isValid(self, other): # check if variable is of same class

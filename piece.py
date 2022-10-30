@@ -4,6 +4,7 @@ import types
 from pos import Pos, BoardPos
 from globals import globals
 from movesClass import Take, Move
+import config
 import draw
 import copy
 
@@ -17,12 +18,12 @@ class Piece():
         self.drawImg()
         self.square = globals.board.getSquare(boardPos)
         self.dragging = False
-        self.bindEvents()
         self.color = color
         self.updateBoard()
         self.snap()
     def drawImg(self):
         self.imgObj = globals.canvas.create_image(60, 60, image=self.img)
+        self.bindEvents()
     def deleteImg(self):
         globals.canvas.delete(self.imgObj)
         self.imgObj = None
@@ -31,32 +32,36 @@ class Piece():
     def unselect(self):
         self.square.color(self.square.origColor)
     def getMoves(self):
-        moves = []
-        takes = []
+        moves = set()
+        takes = set()
         for move in self.moves:
             newMoves = move.calc(self)
-            moves += newMoves
+            moves = moves | newMoves
         for take in self.takes:
             newTakes = take.calc(self)
-            takes += newTakes
-        moves = list(set(moves))
-        takes = list(set(takes))
+            takes = takes | newTakes
         return moves, takes
     def setMoves(self, moves, takes=None):
         self.moves = moves
         if takes == None:
-            self.takes = []
+            takes = []
             for move in self.moves:
-                self.takes.append(Take(move.directions, cond=move.cond, amt=move.amt))
-            return
+                takes.append(Take([direction * -1 for direction in move.directions], cond=move.cond, amt=move.amt))
         self.takes = takes
+        otherColor = config.Color.white
+        if self.color == otherColor:
+            otherColor = config.Color.black
+        globals.attackAngles[otherColor][type(self)] = takes # reverses direction
+    def moveto(self, boardPos):
+        self.square.setPiece(None)
+        self.square = globals.board.getSquare(boardPos)
+        self.boardPos = boardPos
+        self.square.setPiece(self)
     def snap(self, boardPos=None):
         if boardPos == None:
             boardPos = self.boardPos
         self.movetoPos(globals.board.getPosFromBoardPos(boardPos))
-        self.square = globals.board.getSquare(boardPos)
-        self.boardPos = boardPos
-        self.square.setPiece(self)
+        self.moveto(boardPos)
         self.dragging = False
     def bindEvent(self, event, func):
         globals.canvas.tag_bind(self.imgObj, event, func)
@@ -65,10 +70,13 @@ class Piece():
         self.bindEvent('<Button1-ButtonRelease>', self.drop)
         self.bindEvent('<Button-1>', self.select)
     def drop(self, e):
-        if not self.dragging:
-            return
         global mouseX, mouseY
         mouseX, mouseY = 0, 0
+        if not globals.board.isCorrectColor(self):
+            self.snap()
+            return
+        if not self.dragging:
+            return
         pos = Pos(e.x, e.y)
         square = globals.board.getSquareWhichPosInside(pos)
         if square and square.piece:
