@@ -3,6 +3,7 @@ from pos import BoardPos, Pos
 import draw
 import config
 import pieces
+from promotePrompt import PromotionPrompt
 from square import Square
 from globals import globals, HighlightType
 
@@ -16,6 +17,7 @@ class Board(): # rows and columns start at 0, not 1
             config.Color.white: [],
         }
         self.selected = None
+        self.promotionPrompt = None
         self.kings = {
             config.Color.white: None,
             config.Color.black: None,
@@ -39,6 +41,8 @@ class Board(): # rows and columns start at 0, not 1
             globals.turn = config.Color.white
             return
         globals.turn = config.Color.black
+    def newPromotionPrompt(self, boardPos, color): # ah yes i am very intelligent
+        return board.newPromotionPrompt(boardPos, color)
     def movePiece(self, newSquare, piece, isTaking=False):
         if not self.isCorrectColor(piece):
             return False
@@ -53,13 +57,13 @@ class Board(): # rows and columns start at 0, not 1
         piece.snap()
         if piece.imgName == "pawn": # bad code but I'll only change it if another piece is like this
             piece.notMoved = False
-            piece.canEnPassant = True
+            if piece.canPromote():
+                piece.promote()
         self.nextTurn()
     def takePiece(self, piece):
         if not self.validate(piece.boardPos, True):
             return False
-        piece.deleteImg()
-        self.taken[piece.color].append(piece)
+        piece.delete()
         piece.square.setPiece(None)
         return True
     def moveSelected(self, boardPos):

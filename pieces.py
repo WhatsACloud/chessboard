@@ -19,14 +19,14 @@ horizontal = [
 ]
 
 class Rook(Piece):
+    imgName = "rook"
     def __init__(self, boardPos, color):
-        self.imgName = "rook"
         super().__init__(boardPos, color)
         self.setMoves(horizontal)
 
 class Bishop(Piece):
+    imgName = "bishop"
     def __init__(self, boardPos, color):
-        self.imgName = "bishop"
         super().__init__(boardPos, color)
         self.setMoves(diagonal)
 
@@ -37,8 +37,8 @@ def canEnPassant(toTake, piece):
     return piece.imgName == "pawn" and toTake.imgName == "pawn" and toTake.canEnPassant
 
 class Pawn(Piece):
+    imgName = "pawn"
     def __init__(self, boardPos, color):
-        self.imgName = "pawn"
         super().__init__(boardPos, color)
         self.moved = False
         self.notMoved = True
@@ -58,16 +58,23 @@ class Pawn(Piece):
                 Take([direction, Direction.right], amt=1, pieceOffset=direction * -1, cond=canEnPassant),
             ]
         )
+    def canPromote(self):
+        end = 0
+        if self.color == Color.black:
+            end = 7
+        return self.boardPos.y == end
+    def promote(self):
+        globals.board.promotionPrompt = board.newPromotionPrompt(self.boardPos, self.color)
 
 class Queen(Piece):
+    imgName = "queen"
     def __init__(self, boardPos, color):
-        self.imgName = "queen"
         super().__init__(boardPos, color)
         self.setMoves(diagonal + horizontal)
 
 class King(Piece):
+    imgName = "king"
     def __init__(self, boardPos, color):
-        self.imgName = "king"
         super().__init__(boardPos, color)
         self.setMoves(
             changeAmts(diagonal, 1)
@@ -97,8 +104,8 @@ class King(Piece):
         return returnVal
         
 class Knight(Piece):
+    imgName = "knight"
     def __init__(self, boardPos, color):
-        self.imgName = "knight"
         super().__init__(boardPos, color)
         self.setMoves([
             Move([Direction.up * 2, Direction.left], amt=1),

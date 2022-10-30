@@ -34,7 +34,7 @@ class Game():
         # setupPieces(config.Color.black)
         # setupPieces(config.Color.white)
 
-        pieces.Pawn(BoardPos(4, 5), config.Color.black)
+        pieces.Pawn(BoardPos(5, 1), config.Color.white)
         pieces.King(BoardPos(5, 5), config.Color.white)
         pieces.King(BoardPos(0, 0), config.Color.black)
 
