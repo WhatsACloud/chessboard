@@ -22,8 +22,8 @@ class Piece():
         self.updateBoard()
         self.snap()
     @staticmethod
-    def getImg(self, color):
-        img = tk.PhotoImage(file=Piece.getPieceImg(color, self.imgName))
+    def getImg(color, imgName):
+        img = tk.PhotoImage(file=Piece.getPieceImg(color, imgName))
         imgObj = globals.canvas.create_image(
             config.SQUARE_LENGTH,
             config.SQUARE_LENGTH,
@@ -35,7 +35,7 @@ class Piece():
         self.bindEvents()
     def delete(self):
         self.deleteImg()
-        globals.board.taken[piece.color].append(self)
+        globals.board.taken[self.color].append(self)
     def deleteImg(self):
         globals.canvas.delete(self.imgObj)
         self.imgObj = None

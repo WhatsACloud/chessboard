@@ -58,13 +58,13 @@ class Pawn(Piece):
                 Take([direction, Direction.right], amt=1, pieceOffset=direction * -1, cond=canEnPassant),
             ]
         )
-    def canPromote(self):
+    def canPromote(self, boardPos):
         end = 0
         if self.color == Color.black:
             end = 7
-        return self.boardPos.y == end
-    def promote(self):
-        globals.board.promotionPrompt = board.newPromotionPrompt(self.boardPos, self.color)
+        return boardPos.y == end
+    def promote(self, newSquare):
+        globals.board.newPromotionPrompt(self.boardPos, self.color, newSquare) # okay that newSquare variable is just disgraceful
 
 class Queen(Piece):
     imgName = "queen"

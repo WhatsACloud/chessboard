@@ -41,8 +41,8 @@ class Board(): # rows and columns start at 0, not 1
             globals.turn = config.Color.white
             return
         globals.turn = config.Color.black
-    def newPromotionPrompt(self, boardPos, color): # ah yes i am very intelligent
-        return board.newPromotionPrompt(boardPos, color)
+    def newPromotionPrompt(self, boardPos, color, newSquare): # ah yes i am very intelligent
+        self.promotionPrompt = PromotionPrompt(boardPos, color, newSquare)
     def movePiece(self, newSquare, piece, isTaking=False):
         if not self.isCorrectColor(piece):
             return False
@@ -50,15 +50,16 @@ class Board(): # rows and columns start at 0, not 1
         if not self.validate(newSquare.boardPos, isTaking):
             return
         origSquare = piece.square
+        if piece.imgName == "pawn": # bad code but I'll only change it if another piece is like this
+            piece.notMoved = False
+            if piece.canPromote(newSquare.boardPos):
+                piece.promote(newSquare.boardPos)
+                return
         piece.moveto(newSquare.boardPos)
         if self.kings[piece.color].isChecked():
             piece.moveto(origSquare.boardPos)
             return
         piece.snap()
-        if piece.imgName == "pawn": # bad code but I'll only change it if another piece is like this
-            piece.notMoved = False
-            if piece.canPromote():
-                piece.promote()
         self.nextTurn()
     def takePiece(self, piece):
         if not self.validate(piece.boardPos, True):
