@@ -24,12 +24,14 @@ class Piece():
     @staticmethod
     def getImg(color, imgName):
         img = tk.PhotoImage(file=Piece.getPieceImg(color, imgName))
+        return img
+    def getImgObj(img):
         imgObj = globals.canvas.create_image(
             config.SQUARE_LENGTH,
             config.SQUARE_LENGTH,
             image=img
         )
-        return imgObj, img
+        return imgObj
     def drawImg(self):
         self.imgObj = globals.canvas.create_image(config.SQUARE_LENGTH, config.SQUARE_LENGTH, image=self.img)
         self.bindEvents()

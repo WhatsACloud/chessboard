@@ -15,44 +15,43 @@ pieces = { # name of images of pieces that can pawn can promote to
 }
 
 class PromotionPiece:
-    def __init__(self, square, piece, promotingPawn, pieceType, prompt, newSquare):
-        self.square = square
-        self.piece = piece
-        self.toMoveTo = newSquare
-        self.promotingPawn = promotingPawn
+    def __init__(self, squareImgObj, pieceImg, pieceImgObj, pieceType, prompt):
+        self.squareImgObj = squareImgObj
+        self.pieceImg = pieceImg
+        self.pieceImgObj = pieceImgObj
         self.pieceType = pieceType
         self.prompt = prompt
         self.bindEvents()
     def click(self, e):
-        self.promotingPawn.snap(self.toMoveTo)
-        globals.board.nextTurn()
-        square = self.promotingPawn.square
-        color = self.promotingPawn.color
-        self.promotingPawn.delete()
+        globals.board.movePiece(self.prompt.toMoveTo, self.prompt.promotingPawn)
+        square = self.prompt.promotingPawn.square
+        color = self.prompt.promotingPawn.color
+        self.prompt.promotingPawn.delete()
         self.pieceType(square.boardPos, color)
         self.prompt.delete()
-        self.prompt = None
+        self.prompt = None # prevent circular reference between PromotionPiece and PromotionPrompt
     def bindEvent(self, event, func):
-        globals.canvas.tag_bind(self.piece, event, func)
+        globals.canvas.tag_bind(self.pieceImgObj, event, func)
     def bindEvents(self):
         self.bindEvent("<Button-1>", self.click)
 
+
 class PromotionPrompt:
-    def __init__(self, boardPos, color, newSquare):
+    def __init__(self, piece, toMoveTo):
         self.squares = []
-        self.imgs = []
+        self.promotingPawn = globals.board.getSquare(piece.boardPos).piece
+        self.toMoveTo = toMoveTo
         increment = BoardPos(0, -1)
-        self.promotingPawn = globals.board.getSquare(boardPos).piece
-        if color == config.Color.white:
+        if piece.color == config.Color.white:
             increment *= -1
         for pieceType in pieces:
-            startPos = globals.board.getPosFromBoardPos(newSquare)
-            square = self.drawSquare(startPos)
-            imgObj, img = pieceType.getImg(color, pieceType.imgName)
-            self.imgs.append(img)
+            startPos = globals.board.getPosFromBoardPos(toMoveTo)
+            squareImgObj = self.drawSquare(startPos)
+            img = pieceType.getImg(piece.color, pieceType.imgName)
+            imgObj = pieceType.getImgObj(img)
             globals.canvas.moveto(imgObj, startPos.x, startPos.y)
-            self.squares.append(PromotionPiece(square, imgObj, self.promotingPawn, pieceType, self, newSquare))
-            newSquare += increment
+            self.squares.append(PromotionPiece(squareImgObj, img, imgObj, pieceType, self))
+            toMoveTo += increment
         self.funcId = globals.canvas.bind("<ButtonRelease-1>", self.release)
     def release(self, e):
         globals.canvas.unbind("<ButtonRelease-1>", self.funcId)
@@ -62,8 +61,8 @@ class PromotionPrompt:
         self.delete()
     def delete(self):
         for square in self.squares:
-            globals.canvas.delete(square.square)
-            globals.canvas.delete(square.piece)
+            globals.canvas.delete(square.squareImgObj)
+            globals.canvas.delete(square.pieceImgObj)
     def drawSquare(self, startPos):
         return globals.canvas.create_rectangle(
             startPos.x,

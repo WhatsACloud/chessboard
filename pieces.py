@@ -63,8 +63,8 @@ class Pawn(Piece):
         if self.color == Color.black:
             end = 7
         return boardPos.y == end
-    def promote(self, newSquare):
-        globals.board.newPromotionPrompt(self.boardPos, self.color, newSquare) # okay that newSquare variable is just disgraceful
+    def promote(self, toMoveTo):
+        globals.board.newPromotionPrompt(self, toMoveTo) # okay that newSquare variable is just disgraceful
 
 class Queen(Piece):
     imgName = "queen"

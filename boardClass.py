@@ -41,25 +41,25 @@ class Board(): # rows and columns start at 0, not 1
             globals.turn = config.Color.white
             return
         globals.turn = config.Color.black
-    def newPromotionPrompt(self, boardPos, color, newSquare): # ah yes i am very intelligent
-        self.promotionPrompt = PromotionPrompt(boardPos, color, newSquare)
-    def movePiece(self, newSquare, piece, isTaking=False):
+    def newPromotionPrompt(self, piece, newSquare): # ah yes i am very intelligent
+        self.promotionPrompt = PromotionPrompt(piece, newSquare)
+    def checkCanMovePiece(self, newSquare, piece, isTaking=False): # as in can move to SQUARE
         if not self.isCorrectColor(piece):
             return False
         # if not self.validate(newSquare.boardPos, isTaking):
         if not self.validate(newSquare.boardPos, isTaking):
             return
         origSquare = piece.square
+        if self.kings[piece.color].wouldSelfBeChecked(piece, newSquare):
+            return
         if piece.imgName == "pawn": # bad code but I'll only change it if another piece is like this
             piece.notMoved = False
             if piece.canPromote(newSquare.boardPos):
                 piece.promote(newSquare.boardPos)
                 return
-        piece.moveto(newSquare.boardPos)
-        if self.kings[piece.color].isChecked():
-            piece.moveto(origSquare.boardPos)
-            return
-        piece.snap()
+        return True
+    def movePiece(self, boardPos, piece): # should ONLY move piece and call nextTurn
+        piece.snap(boardPos)
         self.nextTurn()
     def takePiece(self, piece):
         if not self.validate(piece.boardPos, True):
@@ -71,13 +71,15 @@ class Board(): # rows and columns start at 0, not 1
         selected = self.selected
         square = self.getSquare(boardPos)
         self.unselect()
-        self.movePiece(square, selected)
+        if self.checkCanMovePiece(square, selected):
+            self.movePiece(square.boardPos, selected)
     def takenBySelected(self, square):
         selected = self.selected
         pieceToTake = square.pieceToTake
         if self.takePiece(pieceToTake):
             self.unselect()
-            self.movePiece(square, selected, True)
+            if self.checkCanMovePiece(square, selected, True):
+                self.movePiece(square.boardPos, selected)
     def isCorrectColor(self, piece):
         return globals.turn == piece.color
     def select(self, piece):
