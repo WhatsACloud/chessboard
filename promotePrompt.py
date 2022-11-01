@@ -7,12 +7,12 @@ import draw
 from piece import Piece
 canvas, board = globals.canvas, globals.board
 
-pieces = { # name of images of pieces that can pawn can promote to
+pieceTypes = [ # name of images of pieces that can pawn can promote to
     pieces.Queen,
+    pieces.Rook,
     pieces.Bishop,
     pieces.Knight,
-    pieces.Rook,
-}
+]
 
 class PromotionPiece:
     def __init__(self, squareImgObj, pieceImg, pieceImgObj, pieceType, prompt):
@@ -44,7 +44,7 @@ class PromotionPrompt:
         increment = BoardPos(0, -1)
         if piece.color == config.Color.white:
             increment *= -1
-        for pieceType in pieces:
+        for pieceType in pieceTypes:
             startPos = globals.board.getPosFromBoardPos(toMoveTo)
             squareImgObj = self.drawSquare(startPos)
             img = pieceType.getImg(piece.color, pieceType.imgName)

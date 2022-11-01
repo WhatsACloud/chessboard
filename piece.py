@@ -62,14 +62,14 @@ class Piece():
             takes = []
             for move in self.moves:
                 takes.append(Take([direction for direction in move.directions], cond=move.cond, amt=move.amt))
-        for take in takes:
-            for i in range(len(take.directions)):
-                take.directions[i] *= -1
         self.takes = takes
         otherColor = config.Color.white
         if self.color == otherColor:
             otherColor = config.Color.black
-        globals.attackAngles[otherColor][type(self)] = takes # reverses direction
+        attackAngles = []
+        for take in takes:
+            attackAngles.append(Take([direction * -1 for direction in take.directions], cond=take.cond, amt=take.amt))
+        globals.attackAngles[otherColor][type(self)] = attackAngles # reverses direction
     def moveto(self, boardPos):
         self.square.setPiece(None)
         self.square = globals.board.getSquare(boardPos)

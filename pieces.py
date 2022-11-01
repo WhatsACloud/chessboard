@@ -31,18 +31,16 @@ class Bishop(Piece):
         self.setMoves(diagonal)
 
 def cond(piece):
-    return piece.notMoved
+    return piece.state == globals.PawnStates.OriginalPos
 
 def canEnPassant(toTake, piece):
-    return piece.imgName == "pawn" and toTake.imgName == "pawn" and toTake.canEnPassant
+    return piece.imgName == "pawn" and toTake.imgName == "pawn" and toTake.state == globals.PawnStates.CanEnPassant
 
 class Pawn(Piece):
     imgName = "pawn"
     def __init__(self, boardPos, color):
         super().__init__(boardPos, color)
-        self.moved = False
-        self.notMoved = True
-        self.canEnPassant = True
+        self.state = globals.PawnStates.OriginalPos
         direction = Direction.up
         if color == Color.black:
             direction = Direction.down
@@ -58,6 +56,7 @@ class Pawn(Piece):
                 Take([direction, Direction.right], amt=1, pieceOffset=direction * -1, cond=canEnPassant),
             ]
         )
+        globals.board.pawns.append(self)
     def canPromote(self, boardPos):
         end = 0
         if self.color == Color.black:

@@ -22,6 +22,8 @@ class Board(): # rows and columns start at 0, not 1
             config.Color.white: None,
             config.Color.black: None,
         }
+        self.pawns = []
+        self.haveEnPassant = []
         self.lastHoveredOver = None
         # globals.canvas.bind("<Button-1>", self.click)
         # self.drawnBoard = draw.drawBoard(canvas, boardLength, config.SQUARE_LENGTH, startPos)
@@ -37,6 +39,13 @@ class Board(): # rows and columns start at 0, not 1
         return False
     # def movePiece(self, newSquare, piece, isTaking=False):
     def nextTurn(self):
+        for pawn in self.pawns:
+            if pawn in self.haveEnPassant:
+                pawn.state = globals.PawnStates.Matured
+                del self.haveEnPassant[self.haveEnPassant.index(pawn)]
+                continue
+            if pawn.state == globals.PawnStates.CanEnPassant:
+                self.haveEnPassant.append(pawn)
         if globals.turn == config.Color.black:
             globals.turn = config.Color.white
             return
@@ -48,15 +57,17 @@ class Board(): # rows and columns start at 0, not 1
             return False
         # if not self.validate(newSquare.boardPos, isTaking):
         if not self.validate(newSquare.boardPos, isTaking):
-            return
+            return False
         origSquare = piece.square
         if self.kings[piece.color].wouldSelfBeChecked(piece, newSquare):
-            return
+            return False
         if piece.imgName == "pawn": # bad code but I'll only change it if another piece is like this
-            piece.notMoved = False
+            if piece.state == globals.PawnStates.OriginalPos:
+                piece.state = globals.PawnStates.CanEnPassant
+                # return # because in practice you should never be able to promote just after the first move
             if piece.canPromote(newSquare.boardPos):
                 piece.promote(newSquare.boardPos)
-                return
+                return False
         return True
     def movePiece(self, boardPos, piece): # should ONLY move piece and call nextTurn
         piece.snap(boardPos)
