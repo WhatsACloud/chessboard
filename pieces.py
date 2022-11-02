@@ -1,7 +1,7 @@
 from movesClass import Direction, Move, Take, changeAmts
 from piece import Piece
 from pos import BoardPos
-from config import Color
+import config
 from globals import globals
 
 diagonal = [
@@ -23,6 +23,7 @@ class Rook(Piece):
     def __init__(self, boardPos, color):
         super().__init__(boardPos, color)
         self.setMoves(horizontal)
+        self.notMoved = True
 
 class Bishop(Piece):
     imgName = "bishop"
@@ -42,7 +43,7 @@ class Pawn(Piece):
         super().__init__(boardPos, color)
         self.state = globals.PawnStates.OriginalPos
         direction = Direction.up
-        if color == Color.black:
+        if color == config.Color.black:
             direction = Direction.down
         self.setMoves(
             [
@@ -59,7 +60,7 @@ class Pawn(Piece):
         globals.board.pawns.append(self)
     def canPromote(self, boardPos):
         end = 0
-        if self.color == Color.black:
+        if self.color == config.Color.black:
             end = 7
         return boardPos.y == end
     def promote(self, toMoveTo):
@@ -71,14 +72,55 @@ class Queen(Piece):
         super().__init__(boardPos, color)
         self.setMoves(diagonal + horizontal)
 
+def canCastleRight(piece, toMoveTo):
+    if isinstance(piece, King) and piece.wouldSelfBeChecked(piece, toMoveTo):
+        return False
+    if isinstance(piece, King) and piece.isChecked():
+        return False
+    rightRook = globals.board.getSquare(BoardPos(config.BOARD_LENGTH-1, piece.boardPos.y)).piece # closer rook
+    if isinstance(rightRook, Rook) and piece.notMoved:
+        for i in range(piece.boardPos.x+1, config.BOARD_LENGTH-1):
+            pieceInPath = globals.board.getSquare(BoardPos(i, piece.boardPos.y)).piece
+            if pieceInPath:
+                return False
+        return True
+    return False
+
+def canCastleLeft(piece, toMoveTo):
+    if isinstance(piece, King) and piece.wouldSelfBeChecked(piece, toMoveTo):
+        return False
+    if isinstance(piece, King) and piece.isChecked():
+        return False
+    leftRook = globals.board.getSquare(BoardPos(0, piece.boardPos.y)).piece # farther rook
+    if isinstance(leftRook, Rook) and piece.notMoved:
+        for i in range(1, piece.boardPos.x):
+            pieceInPath = globals.board.getSquare(BoardPos(i, piece.boardPos.y)).piece
+            if pieceInPath:
+                return False
+        return True
+    return False
+
+def afterCastleRight(piece):
+    rook = globals.board.getSquare(boardPos(7, piece.boardPos.y)).piece
+    rook.snap(BoardPos(5, piece.boardPos.y))
+
+def afterCastleLeft(piece):
+    rook = globals.board.getSquare(boardPos(0, piece.boardPos.y)).piece
+    rook.snap(BoardPos(3, piece.boardPos.y))
+
 class King(Piece):
     imgName = "king"
     def __init__(self, boardPos, color):
         super().__init__(boardPos, color)
         self.setMoves(
-            changeAmts(diagonal, 1)
-          + changeAmts(horizontal, 1)
+            [
+                *changeAmts(diagonal, 1),
+                *changeAmts(horizontal, 1),
+                Move([Direction.right * 2], cond=canCastleRight, after=afterCastleRight),
+                Move([Direction.left * 2], cond=canCastleLeft, after=afterCastleLeft),
+            ],
         )
+        self.notMoved = True
         globals.board.kings[color] = self
     def isChecked(self):
         for pieceType in globals.attackAngles[self.color]:

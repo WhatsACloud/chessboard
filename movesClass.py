@@ -29,9 +29,10 @@ class CalcIterator:
         return square
 
 class Move:
-    def __init__(self, directions, cond=None, amt=config.BOARD_LENGTH):
+    def __init__(self, directions, cond=None, amt=config.BOARD_LENGTH, after=None):
         self.directions = directions
         self.cond = cond
+        self.after = after
         self.amt = amt
     def __repr__(self):
         string = "["
