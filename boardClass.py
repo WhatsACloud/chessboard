@@ -25,7 +25,7 @@ class Board(): # rows and columns start at 0, not 1
         self.pawns = []
         self.haveEnPassant = []
         self.lastHoveredOver = None
-        # globals.canvas.bind("<Button-1>", self.click)
+        # globals.canvas.canvas.bind("<Button-1>", self.click)
         # self.drawnBoard = draw.drawBoard(canvas, boardLength, config.SQUARE_LENGTH, startPos)
     def validate(self, boardPos, isTaking=False):
         if isTaking:
@@ -86,11 +86,12 @@ class Board(): # rows and columns start at 0, not 1
             self.movePiece(square.boardPos, selected)
 
         square.runAfterFunc(selected)
+        self.unhighlight()
     def takenBySelected(self, square):
         selected = self.selected
         pieceToTake = square.pieceToTake
         if self.takePiece(pieceToTake):
-            self.unselect()
+            self.unselectFully()
             if self.checkCanMovePiece(square, selected, True):
                 self.movePiece(square.boardPos, selected)
     def isCorrectColor(self, piece):
@@ -98,7 +99,7 @@ class Board(): # rows and columns start at 0, not 1
     def select(self, piece):
         if not self.isCorrectColor(piece):
             return
-        self.unselect()
+        self.unselectFully()
         self.selected = piece
         piece.square.color(draw.ORANGE)
         self.possibleMoves, self.possibleTakes = piece.getMoves()
@@ -106,14 +107,20 @@ class Board(): # rows and columns start at 0, not 1
             square.highlight(HighlightType.Move)
         for square in self.possibleTakes:
             square.highlight(HighlightType.Take)
-    def unselect(self):
+    def unhighlight(self):
+        for square in self.possibleMoves:
+            square.unhighlight()
+        for square in self.possibleTakes:
+            square.unhighlight()
+    def unselect(self): # i cant be bothered at this point
         if self.selected:
             self.selected.unselect()
-            for square in self.possibleMoves:
-                square.unhighlight()
-            for square in self.possibleTakes:
-                square.unhighlight()
             self.selected = None
+            return True
+        return False
+    def unselectFully(self):
+        if self.unselect():
+            self.unhighlight()
     def getPosFromBoardPos(self, boardPos):
         return Pos(self.startPos.x + boardPos.x * config.SQUARE_LENGTH, self.startPos.y + boardPos.y * config.SQUARE_LENGTH)
     def getSquare(self, pos):

@@ -26,20 +26,20 @@ class Piece():
         img = tk.PhotoImage(file=Piece.getPieceImg(color, imgName))
         return img
     def getImgObj(img):
-        imgObj = globals.canvas.create_image(
+        imgObj = globals.canvas.canvas.create_image(
             config.SQUARE_LENGTH,
             config.SQUARE_LENGTH,
             image=img
         )
         return imgObj
     def drawImg(self):
-        self.imgObj = globals.canvas.create_image(config.SQUARE_LENGTH, config.SQUARE_LENGTH, image=self.img)
+        self.imgObj = globals.canvas.canvas.create_image(config.SQUARE_LENGTH, config.SQUARE_LENGTH, image=self.img)
         self.bindEvents()
     def delete(self):
         self.deleteImg()
         globals.board.taken[self.color].append(self)
     def deleteImg(self):
-        globals.canvas.delete(self.imgObj)
+        globals.canvas.canvas.delete(self.imgObj)
         self.imgObj = None
     def updateBoard(self):
         globals.board.getSquare(self.boardPos).piece = self
@@ -58,6 +58,10 @@ class Piece():
         return moves, takes
     def setMoves(self, moves, takes=None):
         self.moves = moves
+        if takes:
+            for take in takes:
+                if type(take) != Take:
+                    raise Exception('Takes array had object of type Move')
         if takes == None:
             takes = []
             for move in self.moves:
@@ -67,6 +71,8 @@ class Piece():
         if self.color == otherColor:
             otherColor = config.Color.black
         attackAngles = []
+        if otherColor == config.Color.white:
+            print(self)
         for take in takes:
             attackAngles.append(Take([direction * -1 for direction in take.directions], cond=take.cond, amt=take.amt))
         globals.attackAngles[otherColor][type(self)] = attackAngles # reverses direction
@@ -82,7 +88,7 @@ class Piece():
         self.moveto(boardPos)
         self.dragging = False
     def bindEvent(self, event, func):
-        globals.canvas.tag_bind(self.imgObj, event, func)
+        globals.canvas.canvas.tag_bind(self.imgObj, event, func)
     def bindEvents(self):
         self.bindEvent('<Button1-Motion>', self.drag)
         self.bindEvent('<Button1-ButtonRelease>', self.drop)
@@ -97,6 +103,8 @@ class Piece():
             return
         pos = Pos(e.x, e.y)
         square = globals.board.getSquareWhichPosInside(pos)
+        if square == None:
+            return
         if square and square.piece:
             square.took()
         else:
@@ -115,7 +123,7 @@ class Piece():
             moveX = 0
             moveY = 0
         mouseX, mouseY = x, y
-        globals.canvas.move(self.imgObj, moveX, moveY)
+        globals.canvas.canvas.move(self.imgObj, moveX, moveY)
         
         square = globals.board.getSquareWhichPosInside(Pos(mouseX, mouseY))
         if not square or globals.board.lastHoveredOver == square:
@@ -124,9 +132,9 @@ class Piece():
             globals.board.lastHoveredOver.leave()
         square.enter()
         globals.board.lastHoveredOver = square
-        # globals.canvas.moveto(self.imgObj, x, y)
+        # globals.canvas.canvas.moveto(self.imgObj, x, y)
     def movetoPos(self, pos):
-        globals.canvas.moveto(self.imgObj, pos.x, pos.y)
+        globals.canvas.canvas.moveto(self.imgObj, pos.x, pos.y)
     def select(self, e):
         globals.board.select(self)
     @staticmethod

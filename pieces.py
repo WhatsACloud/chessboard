@@ -78,7 +78,7 @@ def canCastleRight(piece, toMoveTo):
     if isinstance(piece, King) and piece.isChecked():
         return False
     rightRook = globals.board.getSquare(BoardPos(config.BOARD_LENGTH-1, piece.boardPos.y)).piece # closer rook
-    if isinstance(rightRook, Rook) and piece.notMoved and rightRook.notMoved:
+    if type(rightRook) == Rook and piece.notMoved and rightRook.notMoved:
         for i in range(piece.boardPos.x+1, config.BOARD_LENGTH-1):
             pieceInPath = globals.board.getSquare(BoardPos(i, piece.boardPos.y)).piece
             if pieceInPath:
@@ -92,7 +92,7 @@ def canCastleLeft(piece, toMoveTo):
     if isinstance(piece, King) and piece.isChecked():
         return False
     leftRook = globals.board.getSquare(BoardPos(0, piece.boardPos.y)).piece # farther rook
-    if isinstance(leftRook, Rook) and piece.notMoved and leftRook.notMoved:
+    if type(leftRook) == Rook and piece.notMoved and leftRook.notMoved:
         for i in range(1, piece.boardPos.x):
             pieceInPath = globals.board.getSquare(BoardPos(i, piece.boardPos.y)).piece
             if pieceInPath:
@@ -116,9 +116,13 @@ class King(Piece):
             [
                 *changeAmts(diagonal, 1),
                 *changeAmts(horizontal, 1),
-                Move([Direction.right * 2], cond=canCastleRight, after=afterCastleRight),
-                Move([Direction.left * 2], cond=canCastleLeft, after=afterCastleLeft),
+                Move([Direction.right * 2], cond=canCastleRight, after=afterCastleRight, amt=1),
+                Move([Direction.left * 2], cond=canCastleLeft, after=afterCastleLeft, amt=1),
             ],
+            [
+                *changeAmts(diagonal, 1, Take),
+                *changeAmts(horizontal, 1, Take),
+            ]
         )
         self.notMoved = True
         globals.board.kings[color] = self
@@ -127,6 +131,7 @@ class King(Piece):
             takes = globals.attackAngles[self.color][pieceType]
             for take in takes:
                 allTakes = []
+                # print(take)
                 for square in take.calc(self, False):
                     if type(globals.board.getSquare(square.boardPos).piece) == pieceType:
                         allTakes.append(square)

@@ -23,7 +23,7 @@ class Square():
             self.after(piece)
             self.after = None
     def bindEvent(self, evt, func):
-        globals.canvas.tag_bind(self.id, evt, func)
+        globals.canvas.canvas.tag_bind(self.id, evt, func)
     def bindEvents(self):
         self.bindEvent("<Button-1>", self.click)
     def enter(self):
@@ -35,7 +35,7 @@ class Square():
         self.piece = piece
     def click(self, e):
         if not self.highlighted:
-            globals.board.unselect()
+            globals.board.unselectFully()
             return
         globals.board.moveSelected(self)
     def drawCircle(self, highlightType):
@@ -50,7 +50,7 @@ class Square():
             fill = ''
             width = 5
         offset = config.SQUARE_LENGTH / 2 - circleLength / 2
-        self.canvasObj = globals.canvas.create_oval(
+        self.canvasObj = globals.canvas.canvas.create_oval(
             startPos.x + offset,
             startPos.y + offset,
             startPos.x + offset + circleLength,
@@ -61,12 +61,12 @@ class Square():
         )
     def deleteCircle(self):
         if self.canvasObj:
-            # globals.canvas.tag_unbind(self.canvasObj, "<Button-1>")
-            globals.canvas.delete(self.canvasObj)
+            # globals.canvas.canvas.tag_unbind(self.canvasObj, "<Button-1>")
+            globals.canvas.canvas.delete(self.canvasObj)
             self.canvasObj = None
     def drawSquare(self):
         startPos = globals.board.getPosFromBoardPos(self.boardPos)
-        self.squareHighlight = globals.canvas.create_rectangle(
+        self.squareHighlight = globals.canvas.canvas.create_rectangle(
             startPos.x,
             startPos.y,
             startPos.x + config.SQUARE_LENGTH,
@@ -76,17 +76,17 @@ class Square():
         )
     def deleteSquare(self):
         if self.squareHighlight:
-            # globals.canvas.tag_unbind(self.canvasObj, "<Button-1>")
-            globals.canvas.delete(self.squareHighlight)
+            # globals.canvas.canvas.tag_unbind(self.canvasObj, "<Button-1>")
+            globals.canvas.canvas.delete(self.squareHighlight)
             self.squareHighlight = None
     def highlight(self, highlightType):
         self.highlighted = True
         self.drawCircle(highlightType)
         match highlightType:
             case HighlightType.Move:
-                globals.canvas.tag_bind(self.canvasObj, "<Button-1>", self.click)
+                globals.canvas.canvas.tag_bind(self.canvasObj, "<Button-1>", self.click)
             case HighlightType.Take:
-                globals.canvas.tag_bind(self.canvasObj, "<Button-1>", self.took)
+                globals.canvas.canvas.tag_bind(self.canvasObj, "<Button-1>", self.took)
                 if self.piece:
                     self.piece.bindEvent("<Button-1>", self.took)
                     return
@@ -95,11 +95,12 @@ class Square():
         self.highlighted = False
         self.pieceToTake = None
         if self.piece:
-            globals.canvas.tag_unbind(self.piece.imgObj, "<Button-1>")
+            globals.canvas.canvas.tag_unbind(self.piece.imgObj, "<Button-1>")
             self.piece.bindEvent('<Button-1>', self.piece.select)
         self.deleteCircle()
         self.after = None
+        print('removed after')
     def took(self, e=None):
         globals.board.takenBySelected(self)
     def color(self, color):
-        globals.canvas.itemconfig(self.id, fill=color, outline=color)
+        globals.canvas.canvas.itemconfig(self.id, fill=color, outline=color)

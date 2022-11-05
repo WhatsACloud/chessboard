@@ -95,8 +95,8 @@ class Take(Move):
                 break
         return takes
     
-def changeAmts(moves, amt):
+def changeAmts(moves, amt, theClass=Move): # wow
     arr = []
     for move in moves:
-        arr.append(Move(move.directions, amt=1))
+        arr.append(theClass(move.directions, amt=1))
     return arr

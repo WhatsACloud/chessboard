@@ -15,7 +15,7 @@ def switchColor(color):
         return BLACK
 def drawSquare(pos, color):
     startX, startY = pos.x, pos.y
-    return globals.canvas.create_rectangle(
+    return globals.canvas.canvas.create_rectangle(
             startX,
             startY,
             startX + SQUARE_LENGTH,

@@ -5,7 +5,6 @@ import config
 import pieces
 import draw
 from piece import Piece
-canvas, board = globals.canvas, globals.board
 
 pieceTypes = [ # name of images of pieces that can pawn can promote to
     pieces.Queen,
@@ -31,7 +30,7 @@ class PromotionPiece:
         self.prompt.delete()
         self.prompt = None # prevent circular reference between PromotionPiece and PromotionPrompt
     def bindEvent(self, event, func):
-        globals.canvas.tag_bind(self.pieceImgObj, event, func)
+        globals.canvas.canvas.tag_bind(self.pieceImgObj, event, func)
     def bindEvents(self):
         self.bindEvent("<Button-1>", self.click)
 
@@ -49,22 +48,22 @@ class PromotionPrompt:
             squareImgObj = self.drawSquare(startPos)
             img = pieceType.getImg(piece.color, pieceType.imgName)
             imgObj = pieceType.getImgObj(img)
-            globals.canvas.moveto(imgObj, startPos.x, startPos.y)
+            globals.canvas.canvas.moveto(imgObj, startPos.x, startPos.y)
             self.squares.append(PromotionPiece(squareImgObj, img, imgObj, pieceType, self))
             toMoveTo += increment
-        self.funcId = globals.canvas.bind("<ButtonRelease-1>", self.release)
+        self.funcId = globals.canvas.canvas.bind("<ButtonRelease-1>", self.release)
     def release(self, e):
-        globals.canvas.unbind("<ButtonRelease-1>", self.funcId)
-        self.funcId = globals.canvas.bind("<Button-1>", self.cancel)
+        globals.canvas.canvas.unbind("<ButtonRelease-1>", self.funcId)
+        self.funcId = globals.canvas.canvas.bind("<Button-1>", self.cancel)
     def cancel(self, e):
-        globals.canvas.unbind("<Button-1>", self.funcId)
+        globals.canvas.canvas.unbind("<Button-1>", self.funcId)
         self.delete()
     def delete(self):
         for square in self.squares:
-            globals.canvas.delete(square.squareImgObj)
-            globals.canvas.delete(square.pieceImgObj)
+            globals.canvas.canvas.delete(square.squareImgObj)
+            globals.canvas.canvas.delete(square.pieceImgObj)
     def drawSquare(self, startPos):
-        return globals.canvas.create_rectangle(
+        return globals.canvas.canvas.create_rectangle(
             startPos.x,
             startPos.y,
             startPos.x + config.SQUARE_LENGTH,
