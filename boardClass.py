@@ -64,10 +64,11 @@ class Board(): # rows and columns start at 0, not 1
         if piece.imgName == "pawn": # bad code but I'll only change it if another piece is like this
             if piece.state == globals.PawnStates.OriginalPos:
                 piece.state = globals.PawnStates.CanEnPassant
-                # return # because in practice you should never be able to promote just after the first move
             if piece.canPromote(newSquare.boardPos):
                 piece.promote(newSquare.boardPos)
                 return False
+        if piece.imgName == "rook" or piece.imgName == "king":
+            piece.notMoved = False
         return True
     def movePiece(self, boardPos, piece): # should ONLY move piece and call nextTurn
         piece.snap(boardPos)
@@ -78,12 +79,13 @@ class Board(): # rows and columns start at 0, not 1
         piece.delete()
         piece.square.setPiece(None)
         return True
-    def moveSelected(self, boardPos):
+    def moveSelected(self, square):
         selected = self.selected
-        square = self.getSquare(boardPos)
         self.unselect()
         if self.checkCanMovePiece(square, selected):
             self.movePiece(square.boardPos, selected)
+
+        square.runAfterFunc(selected)
     def takenBySelected(self, square):
         selected = self.selected
         pieceToTake = square.pieceToTake

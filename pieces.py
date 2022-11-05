@@ -31,7 +31,7 @@ class Bishop(Piece):
         super().__init__(boardPos, color)
         self.setMoves(diagonal)
 
-def cond(piece):
+def cond(piece, toMoveTo):
     return piece.state == globals.PawnStates.OriginalPos
 
 def canEnPassant(toTake, piece):
@@ -78,7 +78,7 @@ def canCastleRight(piece, toMoveTo):
     if isinstance(piece, King) and piece.isChecked():
         return False
     rightRook = globals.board.getSquare(BoardPos(config.BOARD_LENGTH-1, piece.boardPos.y)).piece # closer rook
-    if isinstance(rightRook, Rook) and piece.notMoved:
+    if isinstance(rightRook, Rook) and piece.notMoved and rightRook.notMoved:
         for i in range(piece.boardPos.x+1, config.BOARD_LENGTH-1):
             pieceInPath = globals.board.getSquare(BoardPos(i, piece.boardPos.y)).piece
             if pieceInPath:
@@ -92,7 +92,7 @@ def canCastleLeft(piece, toMoveTo):
     if isinstance(piece, King) and piece.isChecked():
         return False
     leftRook = globals.board.getSquare(BoardPos(0, piece.boardPos.y)).piece # farther rook
-    if isinstance(leftRook, Rook) and piece.notMoved:
+    if isinstance(leftRook, Rook) and piece.notMoved and leftRook.notMoved:
         for i in range(1, piece.boardPos.x):
             pieceInPath = globals.board.getSquare(BoardPos(i, piece.boardPos.y)).piece
             if pieceInPath:
@@ -101,11 +101,11 @@ def canCastleLeft(piece, toMoveTo):
     return False
 
 def afterCastleRight(piece):
-    rook = globals.board.getSquare(boardPos(7, piece.boardPos.y)).piece
+    rook = globals.board.getSquare(BoardPos(7, piece.boardPos.y)).piece
     rook.snap(BoardPos(5, piece.boardPos.y))
 
 def afterCastleLeft(piece):
-    rook = globals.board.getSquare(boardPos(0, piece.boardPos.y)).piece
+    rook = globals.board.getSquare(BoardPos(0, piece.boardPos.y)).piece
     rook.snap(BoardPos(3, piece.boardPos.y))
 
 class King(Piece):

@@ -28,12 +28,18 @@ class CalcIterator:
         square = globals.board.getSquare(self.currentPos)
         return square
 
+class PossibleMove:
+    def __init__(self, square, afterFunc):
+        self.square = square
+        self.afterFunc = afterFunc
+
 class Move:
     def __init__(self, directions, cond=None, amt=config.BOARD_LENGTH, after=None):
         self.directions = directions
         self.cond = cond
         self.after = after
         self.amt = amt
+        self.after = after
     def __repr__(self):
         string = "["
         for direction in self.directions:
@@ -45,7 +51,7 @@ class Move:
         if globals.board.kings[origPiece.color].wouldSelfBeChecked(origPiece, square):
             return False
         if self.cond:
-            return self.cond(origPiece)
+            return self.cond(origPiece, square)
         return True
     def calc(self, piece):
         moves = set()
@@ -54,6 +60,8 @@ class Move:
             # if square.boardPos == BoardPos(5, 4):
             if square.piece or not self.can(piece, square):
                 break
+            if self.after:
+                square.after = self.after
             moves.add(square)
         return moves
 

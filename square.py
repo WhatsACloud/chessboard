@@ -12,11 +12,16 @@ class Square():
         self.squareHighlight = None
         self.pieceToTake = None # IF it is an available square to take (has circle on it), this is the piece that will be taken
         self.piece = None
+        self.after = None # my epiphany that I am stupid
         self.bindEvents()
     def __repr__(self):
         return f"[{self.boardPos.x}, {self.boardPos.y}]"
     def __hash__(self):
         return hash(self.boardPos)
+    def runAfterFunc(self, piece):
+        if self.after:
+            self.after(piece)
+            self.after = None
     def bindEvent(self, evt, func):
         globals.canvas.tag_bind(self.id, evt, func)
     def bindEvents(self):
@@ -32,7 +37,7 @@ class Square():
         if not self.highlighted:
             globals.board.unselect()
             return
-        globals.board.moveSelected(self.boardPos)
+        globals.board.moveSelected(self)
     def drawCircle(self, highlightType):
         startPos = globals.board.getPosFromBoardPos(self.boardPos)
         circleLength = config.SQUARE_LENGTH / 4
@@ -93,6 +98,7 @@ class Square():
             globals.canvas.tag_unbind(self.piece.imgObj, "<Button-1>")
             self.piece.bindEvent('<Button-1>', self.piece.select)
         self.deleteCircle()
+        self.after = None
     def took(self, e=None):
         globals.board.takenBySelected(self)
     def color(self, color):

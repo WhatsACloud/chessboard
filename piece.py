@@ -100,7 +100,7 @@ class Piece():
         if square and square.piece:
             square.took()
         else:
-            globals.board.moveSelected(square.boardPos)
+            globals.board.moveSelected(square)
         self.snap()
         if globals.board.lastHoveredOver:
             globals.board.lastHoveredOver.leave()

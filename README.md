@@ -1,2 +1,2 @@
 TODO
-1. Castling
+1. Actual game support
