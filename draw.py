@@ -7,6 +7,8 @@ WHITE = "#ffffe3"
 ORANGE = "#ffbb00"
 GREY = "#cfcfcf"
 LIGHTGREY = "#f0f0f0"
+RED = "#fc0317"
+DARKRED = "#6e0009"
 
 def switchColor(color):
     if color == BLACK:

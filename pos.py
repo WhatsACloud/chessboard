@@ -50,3 +50,9 @@ class BoardPos(Pos): # board pos
         if more or less:
             return True
         return False
+
+class Scale(Pos):
+    def __init__(self, x=None, y=None):
+        # if not (0 <= x <= 1) or not (0 <= y <= 1):
+            # raise ValueError("Scale can only be between 0 and 1")
+        super().__init__(x, y)
