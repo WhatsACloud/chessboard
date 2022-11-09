@@ -55,7 +55,6 @@ class Board(): # rows and columns start at 0, not 1
     def checkCanMovePiece(self, newSquare, piece, isTaking=False): # as in can move to SQUARE
         if not self.isCorrectColor(piece):
             return False
-        # if not self.validate(newSquare.boardPos, isTaking):
         if not self.validate(newSquare.boardPos, isTaking):
             return False
         origSquare = piece.square

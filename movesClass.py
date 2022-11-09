@@ -28,10 +28,10 @@ class CalcIterator:
         square = globals.board.getSquare(self.currentPos)
         return square
 
-class PossibleMove:
-    def __init__(self, square, afterFunc):
-        self.square = square
-        self.afterFunc = afterFunc
+# class PossibleMove:
+    # def __init__(self, square, afterFunc):
+        # self.square = square
+        # self.afterFunc = afterFunc
 
 class Move:
     def __init__(self, directions, cond=None, amt=config.BOARD_LENGTH, after=None):
@@ -57,7 +57,6 @@ class Move:
         moves = set()
         currentPos = copy.deepcopy(piece.boardPos)
         for square in CalcIterator(self.directions, currentPos, self.amt):
-            # if square.boardPos == BoardPos(5, 4):
             if square.piece or not self.can(piece, square):
                 break
             if self.after:

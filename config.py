@@ -13,3 +13,8 @@ FONT = "TKDefaultFont"
 class Color():
     black = "black"
     white = "white"
+
+def switchColor(color):
+    if color == Color.black:
+        return Color.white
+    return Color.black

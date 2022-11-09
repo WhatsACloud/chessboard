@@ -130,13 +130,16 @@ class King(Piece):
         for pieceType in globals.attackAngles[self.color]:
             takes = globals.attackAngles[self.color][pieceType]
             for take in takes:
-                allTakes = []
-                # print(take)
+                # allTakes = []
+                # # print(take)
+                # for square in take.calc(self, False):
+                    # if type(globals.board.getSquare(square.boardPos).piece) == pieceType:
+                        # allTakes.append(square)
+                # if len(allTakes) > 0:
+                    # return True
                 for square in take.calc(self, False):
-                    if type(globals.board.getSquare(square.boardPos).piece) == pieceType:
-                        allTakes.append(square)
-                if len(allTakes) > 0:
-                    return True
+                    if type(square.piece) == pieceType:
+                        return True
         return False
     def wouldSelfBeChecked(self, origPiece, newSquare):
         returnVal = False
@@ -148,6 +151,36 @@ class King(Piece):
         origPiece.moveto(origSquare.boardPos)
         newSquare.piece = newSquarePiece
         return returnVal
+    def isCheckmated(self):
+        attackRoutes = self.getAttackRoutes()
+        if len(attackRoutes) == 0: # no attackers
+            return False
+        moves, takes = self.getMoves()
+        if len([*moves, *takes]) > 0: # has square to move to
+            return False
+        for square in attackRoutes:
+            if square.piece: # checks if there is piece of opposite color
+                if square.piece.color != self.color:
+                    attackTypes = globals.attackAngles[config.switchColor(self.color)]
+                    for pieceType in attackTypes:
+                        takes = attackTypes[pieceType]
+                        for take in takes:
+                            for takeSquare in take.calc(square.piece, False): # as in possible take from current square
+                                if type(takeSquare.piece) == pieceType and self.wouldSelfBeChecked(takeSquare.piece, square):
+                                    return False
+            else:
+                moveTypes = globals.moveAngles[config.switchColor(self.color)]
+                for pieceType in moveTypes:
+                        moves = moveTypes[pieceType]
+                        for move in moves:
+                            for moveSquare in move.calc(square, True): # as in possible move from current square
+                                if (
+                                    moveSquare.piece.color == self.color
+                                    and type(moveSquare.piece) == pieceType
+                                    and self.wouldSelfBeChecked(moveSquare.piece, square)
+                                ):
+                                    return False
+        return True
         
 class Knight(Piece):
     imgName = "knight"
