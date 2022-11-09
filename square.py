@@ -99,7 +99,6 @@ class Square():
             self.piece.bindEvent('<Button-1>', self.piece.select)
         self.deleteCircle()
         self.after = None
-        print('removed after')
     def took(self, e=None):
         globals.board.takenBySelected(self)
     def color(self, color):

@@ -71,8 +71,6 @@ class Piece():
         if self.color == otherColor:
             otherColor = config.Color.black
         attackAngles = []
-        if otherColor == config.Color.white:
-            print(self)
         for take in takes:
             attackAngles.append(Take([direction * -1 for direction in take.directions], cond=take.cond, amt=take.amt))
         globals.attackAngles[otherColor][type(self)] = attackAngles # reverses direction

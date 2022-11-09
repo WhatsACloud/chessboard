@@ -5,7 +5,7 @@ class Pos(): # actual pos
         self.x = x
         self.y = y
     def __repr__(self):
-        return str(self.x) + " " + str(self.y)
+        return f"[{str(self.x)} {str(self.y)}]"
     def __sub__(self, other):
         other = self.isValid(other)
         return type(self)(self.x - other.x, self.y - other.y)

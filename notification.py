@@ -8,20 +8,16 @@ from abc import ABC, abstractmethod
 
 # WIDTH, HEIGHT = 400, 120
 bgDim = Scale(0.3, 0.2)
-textDim = Scale(0.15, 0.1)
-fontSize = 0.01
+textDim = Scale(0.1, 0.05)
+defaultFontSize = 12
 
-class AbsObj(ABC):
-    def __init__(self, scale=None, size=None, offset=None):
+class AbsObj(ABC): # pos is in px, scale is relative i.e. 0 to 10
+    def __init__(self, scale=None, size=None):
         if scale == None:
-            scale = Scale(0, 0)
-        if size == None:
-            size = Scale(0, 0)
-        if offset == None:
-            offset = Pos(0, 0)
+            scale = Pos(0, 0)
         self.scale = scale
-        self.size = size
-        self.offset = offset
+        if size != None:
+            self.size = size
         self.obj = self.createObj()
 
     @abstractmethod
@@ -30,31 +26,32 @@ class AbsObj(ABC):
     @abstractmethod
     def createObj(self):
         pass
-    @abstractmethod
-    def getSize(self):
-        pass
-    def getPos(self):
-        return globals.canvas.toScale(self.scale)
-    def delete(self):
-        globals.canvas.canvas.delete(self.obj)
+
+    @property
+    def pos(self):
+        return globals.canvas.toActual(self.scale)
     @property
     def end(self):
-        return globals.canvas.toScale(self.scale + self.size)
-    def actual(self, scale):
-        return globals.canvas.toScale(scale)
+        return globals.canvas.toActual(self.scale + self.size)
+    @property
+    def center(self):
+        return Scale(self.scale.x + self.size.x/2, self.scale.y + self.size.y/2)
+
+    def delete(self):
+        globals.canvas.canvas.delete(self.obj)
 
 class Rect(AbsObj):
-    def __init__(self, scale, size, fill, activeFill=None, offset=None, outline=None):
+    def __init__(self, scale, size, fill, activeFill=None, outline=None):
         if outline == None:
             outline = fill
         self.color = fill
         self.activeColor = activeFill
         self.outline = outline
-        super().__init__(scale, size, offset)
+        super().__init__(scale, size)
     def createObj(self):
         return globals.canvas.canvas.create_rectangle(
-            self.actual(self.scale).x,
-            self.actual(self.scale).y,
+            self.pos.x,
+            self.pos.y,
             self.end.x,
             self.end.y,
             fill=self.color,
@@ -62,88 +59,110 @@ class Rect(AbsObj):
             outline=self.outline
         )
     def update(self):
-        globals.canvas.canvas.coords(self.obj, self.actual(self.scale).x, self.actual(self.scale).y, self.end.x, self.end.y)
+        globals.canvas.canvas.coords(self.obj, self.pos.x, self.pos.y, self.end.x, self.end.y)
     def getSize(self):
         return self.size
 
 class Text(AbsObj):
-    def __init__(self, size, text, offset=None, color=draw.BLACK):
+    def __init__(self, scale, fontSize, text, centerPoint=None, color="black"):
         self._text = text
+        self.centerPoint = centerPoint
+        self.fontSize = globals.canvas.getScaleFromFontSize(fontSize)
         self.color = color
-        super().__init__(None, size, offset)
+        super().__init__(scale, None)
+        self.text = text
     @property
     def text(self):
         return self._text
     @text.setter
     def text(self, text):
         self._text = text
-        globals.canvas.canvas.itemconfig(text, text=text)
+        globals.canvas.canvas.itemconfig(self.obj, text=text)
+        if self.centerPoint:
+            self.moveto(globals.canvas.centerOf(globals.canvas.toScale(self.size), self.centerPoint))
     @property
-    def actualSize(self):
-        return math.ceil(self.size * globals.canvas.getDimensions().x)
-    def createObj(self): # because yes
-        pos = self.getPos()
-        return globals.canvas.canvas.create_text(pos.x, pos.y, text=self.text, fill=self.color, font=(config.FONT, self.actualSize))
-    def getSize():
-        bounds = globals.canvas.canvas.bbox(self.text)
+    def size(self):
+        bounds = globals.canvas.canvas.bbox(self.obj)
         width = bounds[2] - bounds[0]
         height = bounds[3] - bounds[1]
         return Pos(width, height)
-    def moveto(self, pos=None):
-        if pos == None:
-            pos = self.scale
-        globals.canvas.canvas.moveto(self.obj, self.actual(self.scale).x, self.actual(self.scale).y)
+    def getScaledFontSize(self):
+        # return math.ceil(self.fontSize * (globals.canvas.getDimensions().x + globals.canvas.getDimensions().y) / 2)
+        return math.ceil(self.fontSize * globals.canvas.getDimensions().x)
+    def createObj(self): # because yes
+        pos = self.pos
+        return globals.canvas.canvas.create_text(pos.x, pos.y, text=self.text, fill=self.color, font=(config.FONT, self.getScaledFontSize()))
+    def moveto(self, scale=None):
+        if scale == None:
+            scale = self.scale
+        elif type(scale) == Scale:
+            self.scale = scale
+        globals.canvas.canvas.moveto(self.obj, self.pos.x, self.pos.y)
     def update(self):
-        print(self.actualSize, self.size, globals.canvas.screenSize.x)
-        globals.canvas.canvas.itemconfig(self.obj, font=(config.FONT, self.actualSize))
+        globals.canvas.canvas.itemconfig(self.obj, font=(config.FONT, self.getScaledFontSize()))
         self.moveto()
-        # globals.canvas.canvas.moveto(self.text, x + (width - textWidth) / 2, y + (height - textHeight) - 10)
 
 # scale refers to relative position
 class Button: # a button on tk canvas because yes
-    def __init__(self, clickFunc, bg, text):
-        self.bg = bg
-        self.text = text
+    def __init__(self, clickFunc, scale, size, fill, activeFill, fontSize, text):
+        self.bg = Rect(scale, size, fill=fill)
+        self.fill = fill
+        self.activeFill = activeFill
+        self.text = Text(None, fontSize, text, centerPoint=self.bg.center)
         self.click = clickFunc
         self.update()
         self.bindEvents()
-    def moveTo(self, scale):
-        pass
+    def moveto(self, scale):
+        diff = self.bg.scale - scale
+        self.bg.scale = scale
+        self.text.scale -= diff
+        print(self.text.scale)
+        self.update()
     def update(self):
-        globals.canvas.canvas.coords(self.bg, self.bg.scale.x, self.bg.scale.y, self.bg.scale.x + self.bg.size.x, self.bg.scale.y + self.bg.size.y)
+        self.bg.update()
         self.text.update()
     def bindEvent(self, evt, func):
-        globals.canvas.canvas.tag_bind(self.bg, evt, func)
+        globals.canvas.canvas.tag_bind(self.bg.obj, evt, func)
         globals.canvas.canvas.tag_bind(self.text.obj, evt, func)
     def bindEvents(self):
         self.bindEvent("<Button-1>", self.click)
+        # globals.canvas.canvas.tag_bind(self.bg.obj, "<Enter>", self.highlight)
+        # globals.canvas.canvas.tag_bind(self.bg.obj, "<Leave>", self.unhighlight)
+        self.bindEvent("<Enter>", self.highlight)
+        self.bindEvent("<Leave>", self.unhighlight)
+    def highlight(self, e):
+        globals.canvas.canvas.itemconfig(self.bg.obj, fill=self.activeFill, outline=self.activeFill)
+    def unhighlight(self, e):
+        globals.canvas.canvas.itemconfig(self.bg.obj, fill=self.fill, outline=self.fill)
     def delete(self):
-        globals.canvas.canvas.delete(self.bg)
+        self.bg.delete()
         self.text.delete()
 
 class Notification:
     def __init__(self, text):
         # self.background = globals.canvas.canvas.create_rectangle(0, 0, 0, 0, fill="grey", outline="white")
         self.background = Rect(globals.canvas.centerOf(bgDim), bgDim, fill="grey", outline="white")
-        self.text = Text(fontSize, text)
-        buttonPos = globals.canvas.centerOf(textDim, self.background.scale)
-        buttonPos.y = self.background.scale.y + self.background.size.y
+        self.text = Text(None, defaultFontSize, text, centerPoint=Scale(0.5, 0.5))
+        buttonPos = globals.canvas.centerOf(textDim, self.background.center)
+        buttonPos.y += self.background.size.y/2 - textDim.y/2 - 0.01
         self.button = Button(
             self.close,
-            Rect(buttonPos, textDim, fill=draw.RED, activeFill=draw.DARKRED),
-            Text(globals.canvas.centerOf(textDim, buttonPos), fontSize, "close")
+            buttonPos,
+            textDim,
+            draw.RED,
+            draw.DARKRED,
+            defaultFontSize,
+            "close"
         )
         globals.canvas.bindToResize(self.update)
         self.update()
+    def delete(self):
+        self.background.delete()
+        self.text.delete()
+        self.button.delete()
     def close(self, e):
         self.delete()
     def update(self):
         self.background.update()
         self.text.update()
         self.button.update()
-        # globals.canvas.canvas.coords(self.background, x, y, x + width, y + height)
-        # globals.canvas.canvas.itemconfig(self.text, font=(config.FONT, int(w * fontSize)))
-        # textWidth, textHeight = getTextDimensions(self.text)
-        # globals.canvas.canvas.moveto(self.text, x + (width - textWidth) / 2, y + (height - textHeight) - 10)
-        # globals.canvas.canvas.scale(self.background, 0, 0, (width * WIDTH), HEIGHT / height)
-        # globals.canvas.canvas.moveto(self.background, x, y)

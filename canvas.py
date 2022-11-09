@@ -5,18 +5,18 @@ from globals import globals
 class Canvas: # why james WHY
     def __init__(self, canvasWidget):
         self.canvas = canvasWidget
-        self.screenSize = self.getScreenSize()
         self.resizeEvts = []
     def getDimensions(self):
         self.canvas.update()
         return Pos(self.canvas.winfo_width(), self.canvas.winfo_height())
-    def getScreenSize(self):
-        return Pos(self.canvas.winfo_screenwidth(), self.canvas.winfo_screenheight())
-    def getFontSizeFromScale(self, size):
-        return int(size * self.getDimensions().x)
-    def toScale(self, scale):
+    def getScaleFromFontSize(self, size): # returns relative i.e. betw. 1 and 0 size based on font size and screen size proportions
+        return size / 1000
+    def toActual(self, scale):
         dimensions = self.getDimensions()
         return Pos(dimensions.x * scale.x, dimensions.y * scale.y)
+    def toScale(self, pos):
+        dimensions = self.getDimensions()
+        return Scale(pos.x / dimensions.x, pos.y / dimensions.y)
     def centerOf(self, scale, center=None): # get start of centered element given its relative width and height
         if center == None:
             center = Scale(0.5, 0.5) # center of screen

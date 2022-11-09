@@ -12,7 +12,7 @@ def main():
     # window.state('zoomed')
     canvas.initCanvas(window)
     game.Game(Pos(config.startX, config.startY), config.BOARD_LENGTH)
-    notification.Notification("OMG u got check lmao trash")
+    notification.Notification(" GAME END\nWHITE WINS")
     window.mainloop()
 
 if __name__ == "__main__":
