@@ -35,9 +35,12 @@ class Piece():
     def drawImg(self):
         self.imgObj = globals.canvas.canvas.create_image(config.SQUARE_LENGTH, config.SQUARE_LENGTH, image=self.img)
         self.bindEvents()
+    def remove(self):
+        self.delete()
+        globals.board.taken[self.color].append(self)
     def delete(self):
         self.deleteImg()
-        globals.board.taken[self.color].append(self)
+        self.square.setPiece(None)
     def deleteImg(self):
         globals.canvas.canvas.delete(self.imgObj)
         self.imgObj = None
@@ -53,8 +56,9 @@ class Piece():
             newMoves = move.calc(self)
             moves = moves | newMoves
         for take in self.takes:
-            newTakes = take.calc(self)
-            takes = takes | newTakes
+            square = take.calc(self)
+            if square:
+                takes.add(square)
         return moves, takes
     def setMoves(self, moves, takes=None):
         self.moves = moves
@@ -67,13 +71,15 @@ class Piece():
             for move in self.moves:
                 takes.append(Take([direction for direction in move.directions], cond=move.cond, amt=move.amt))
         self.takes = takes
-        otherColor = config.Color.white
-        if self.color == otherColor:
-            otherColor = config.Color.black
+        otherColor = config.changeColor(self.color)
         attackAngles = []
         for take in takes:
             attackAngles.append(Take([direction * -1 for direction in take.directions], cond=take.cond, amt=take.amt))
         globals.attackAngles[otherColor][type(self)] = attackAngles # reverses direction
+        moveAngles = []
+        for move in moves:
+            moveAngles.append(Take([direction * -1 for direction in move.directions], cond=move.cond, amt=move.amt))
+        globals.moveAngles[self.color][type(self)] = moveAngles # reverses direction
     def moveto(self, boardPos):
         self.square.setPiece(None)
         self.square = globals.board.getSquare(boardPos)

@@ -10,6 +10,10 @@ class globals():
     board = None
     canvas = None
     turn = None
+    moveAngles = {
+        Color.white: {}, # where white can move
+        Color.black: {} # where black can move
+    } # for checking if king is checked
     attackAngles = {
         Color.white: {}, # where white will be attacked
         Color.black: {} # where black will be attacked

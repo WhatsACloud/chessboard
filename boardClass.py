@@ -46,11 +46,12 @@ class Board(): # rows and columns start at 0, not 1
                 continue
             if pawn.state == globals.PawnStates.CanEnPassant:
                 self.haveEnPassant.append(pawn)
-        if globals.turn == config.Color.black:
-            globals.turn = config.Color.white
-            return
-        globals.turn = config.Color.black
+        globals.turn = config.changeColor(globals.turn)
+        checkmated = self.kings[globals.turn].isCheckmated()
+        print(checkmated)
     def newPromotionPrompt(self, piece, newSquare): # ah yes i am very intelligent
+        if self.promotionPrompt:
+            self.promotionPrompt.delete()
         self.promotionPrompt = PromotionPrompt(piece, newSquare)
     def checkCanMovePiece(self, newSquare, piece, isTaking=False): # as in can move to SQUARE
         if not self.isCorrectColor(piece):

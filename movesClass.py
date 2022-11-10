@@ -79,20 +79,41 @@ class Take(Move):
         if pieceSquare:
             return pieceSquare.piece
         return None
-    def calc(self, piece, checkIsCheck=True):
-        takes = set()
+    def getPath(self, piece, checkIsCheck=True):
+        squares = []
         currentPos = copy.deepcopy(piece.boardPos)
         for square in CalcIterator(self.directions, currentPos, self.amt):
             pieceToTake = self.getPieceToTake(square)
+            # if piece.imgName == "pawn" and self.amt == 8:
+                # if square.boardPos == BoardPos(4, 5):
+                    # print("lasdfjsdjf", square.piece, pieceToTake, square.boardPos)
             if checkIsCheck and pieceToTake and globals.board.kings[piece.color].wouldSelfBeChecked(piece, pieceToTake.square):
                 break
+            squares.append(square)
+            # if piece.imgName == "pawn" and self.amt == 8:
+                # if square.boardPos == BoardPos(4, 5):
+                    # print("2", square.piece, pieceToTake, square.boardPos)
             if pieceToTake and self.canTake(pieceToTake, piece):
                 square.pieceToTake = pieceToTake
-                takes.add(square)
-                break
+                return squares
             if square.piece:
                 break
-        return takes
+        return []
+    def calc(self, piece, checkIsCheck=True):
+        currentPos = copy.deepcopy(piece.boardPos)
+        squares = self.getPath(piece, checkIsCheck)
+        if len(squares) > 0:
+            return squares[-1]
+        # for square in CalcIterator(self.directions, currentPos, self.amt):
+            # pieceToTake = self.getPieceToTake(square)
+            # if checkIsCheck and pieceToTake and globals.board.kings[piece.color].wouldSelfBeChecked(piece, pieceToTake.square):
+                # break
+            # if pieceToTake and self.canTake(pieceToTake, piece):
+                # square.pieceToTake = pieceToTake
+                # return square
+            # if square.piece:
+                # break
+        return None
     
 def changeAmts(moves, amt, theClass=Move): # wow
     arr = []

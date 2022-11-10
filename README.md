@@ -5,3 +5,4 @@ TODO
 4. Shows which pieces have been taken by who
 5. Add scaling for chess board
 6. Prevent user from castling when king is checked
+

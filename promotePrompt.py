@@ -28,12 +28,10 @@ class PromotionPiece:
         self.prompt.promotingPawn.delete()
         self.pieceType(square.boardPos, color)
         self.prompt.delete()
-        self.prompt = None # prevent circular reference between PromotionPiece and PromotionPrompt
     def bindEvent(self, event, func):
         globals.canvas.canvas.tag_bind(self.pieceImgObj, event, func)
     def bindEvents(self):
         self.bindEvent("<Button-1>", self.click)
-
 
 class PromotionPrompt:
     def __init__(self, piece, toMoveTo):
@@ -62,6 +60,8 @@ class PromotionPrompt:
         for square in self.squares:
             globals.canvas.canvas.delete(square.squareImgObj)
             globals.canvas.canvas.delete(square.pieceImgObj)
+            square.prompt = None
+        self.squares = None
     def drawSquare(self, startPos):
         return globals.canvas.canvas.create_rectangle(
             startPos.x,
