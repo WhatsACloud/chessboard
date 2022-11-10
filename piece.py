@@ -21,6 +21,7 @@ class Piece():
         self.color = color
         self.updateBoard()
         self.snap()
+        globals.board.pieces[self.color].append(self)
     @staticmethod
     def getImg(color, imgName):
         img = tk.PhotoImage(file=Piece.getPieceImg(color, imgName))
@@ -38,6 +39,7 @@ class Piece():
     def remove(self):
         self.delete()
         globals.board.taken[self.color].append(self)
+        globals.board.pieces[self.color].remove(self)
     def delete(self):
         self.deleteImg()
         self.square.setPiece(None)
@@ -76,10 +78,6 @@ class Piece():
         for take in takes:
             attackAngles.append(Take([direction * -1 for direction in take.directions], cond=take.cond, amt=take.amt))
         globals.attackAngles[otherColor][type(self)] = attackAngles # reverses direction
-        moveAngles = []
-        for move in moves:
-            moveAngles.append(Take([direction * -1 for direction in move.directions], cond=move.cond, amt=move.amt))
-        globals.moveAngles[self.color][type(self)] = moveAngles # reverses direction
     def moveto(self, boardPos):
         self.square.setPiece(None)
         self.square = globals.board.getSquare(boardPos)

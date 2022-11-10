@@ -18,6 +18,10 @@ class Board(): # rows and columns start at 0, not 1
         }
         self.selected = None
         self.promotionPrompt = None
+        self.pieces = {
+            config.Color.white: [],
+            config.Color.black: [],
+        }
         self.kings = {
             config.Color.white: None,
             config.Color.black: None,
@@ -76,7 +80,7 @@ class Board(): # rows and columns start at 0, not 1
     def takePiece(self, piece):
         if not self.validate(piece.boardPos, True):
             return False
-        piece.delete()
+        piece.remove()
         piece.square.setPiece(None)
         return True
     def moveSelected(self, square):

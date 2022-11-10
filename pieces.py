@@ -132,7 +132,20 @@ class King(Piece):
         self.notMoved = True
         globals.board.kings[color] = self
     def isChecked(self):
-        return self.canBeTaken(self)
+        for pieceType in globals.attackAngles[self.color]:
+            takes = globals.attackAngles[self.color][pieceType]
+            for take in takes:
+                # allTakes = []
+                # # print(take)
+                # for square in take.calc(self, False):
+                    # if type(globals.board.getSquare(square.boardPos).piece) == pieceType:
+                        # allTakes.append(square)
+                # if len(allTakes) > 0:
+                    # return True
+                square = take.calc(self, False)
+                if square and square.piece and type(square.piece) == pieceType:
+                    return True
+        return False
     def wouldSelfBeChecked(self, origPiece, newSquare):
         returnVal = False
         origSquare = origPiece.square
@@ -143,73 +156,13 @@ class King(Piece):
         origPiece.moveto(origSquare.boardPos)
         newSquare.piece = newSquarePiece
         return returnVal
-    def canBeTaken(self, piece):
-        for pieceType in globals.attackAngles[piece.color]:
-            takes = globals.attackAngles[piece.color][pieceType]
-            for take in takes:
-                # allTakes = []
-                # # print(take)
-                # for square in take.calc(self, False):
-                    # if type(globals.board.getSquare(square.boardPos).piece) == pieceType:
-                        # allTakes.append(square)
-                # if len(allTakes) > 0:
-                    # return True
-                square = take.calc(piece, False)
-                if square and square.piece and type(square.piece) == pieceType:
-                    return True
-        return False
-    def getAttackers(self):
-        attackers = []
-        for pieceType in globals.attackAngles[self.color]:
-            takes = globals.attackAngles[self.color][pieceType]
-            for take in takes:
-                squares = take.getPath(self, False)
-                if len(squares) > 0:
-                    attackers.append(Attacker(squares.pop().piece, squares))
-        return attackers
     def isCheckmated(self):
-        attackers = self.getAttackers()
-        if len(attackers) == 0: # no attackers
-            return False
-        if len(attackers) < 2: # if only one attacker
-            if self.canBeTaken(attackers[0].attacker): # and that attacker can be taken
+        for piece in globals.board.pieces[self.color]:
+            moves, takes = piece.getMoves()
+            if len([*moves, *takes]) > 0:
+                print(self.color, piece)
+                print(moves, takes)
                 return False
-            for attacker in attackers:
-                for square in attacker.route: # can a piece block it
-                    if square.piece: # checks if there is piece of opposite color
-                        if square.piece.color != self.color:
-                            attackTypes = globals.attackAngles[config.changeColor(self.color)]
-                            for pieceType in attackTypes:
-                                takes = attackTypes[pieceType]
-                                for take in takes:
-                                    takeSquare = take.calc(square.piece, False) # as in possible take from current square
-                                    if type(takeSquare.piece) == pieceType and self.wouldSelfBeChecked(takeSquare.piece, square):
-                                        return False
-                    else:
-                        moveTypes = globals.moveAngles[config.changeColor(self.color)]
-                        for pieceType in moveTypes:
-                                moves = moveTypes[pieceType]
-                                for take in moves:
-                                    samplePiece = Pawn(square.boardPos, self.color)
-                                    moveSquare = take.calc(samplePiece, False) # as in possible move from current square
-                                    if moveSquare and moveSquare.boardPos == BoardPos(4, 5):
-                                        print(
-                                            moveSquare,
-                                            moveSquare.piece.color == self.color,
-                                            type(moveSquare.piece) == pieceType,
-                                            self.wouldSelfBeChecked(moveSquare.piece, square),
-                                        )
-                                    samplePiece.delete()
-                                    if ( # its a take because we are checking if a piece exists in moves
-                                        moveSquare
-                                        and moveSquare.piece.color == config.changeColor(self.color)
-                                        and type(moveSquare.piece) == pieceType
-                                        and self.wouldSelfBeChecked(moveSquare.piece, square)
-                                    ):
-                                        return False
-        moves, takes = self.getMoves()
-        if len([*moves, *takes]) > 0: # has square to move to
-            return False
         return True
         
 class Knight(Piece):
