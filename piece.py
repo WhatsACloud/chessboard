@@ -95,26 +95,31 @@ class Piece():
         self.bindEvent('<Button1-Motion>', self.drag)
         self.bindEvent('<Button1-ButtonRelease>', self.drop)
         self.bindEvent('<Button-1>', self.select)
-    def drop(self, e):
-        global mouseX, mouseY
-        mouseX, mouseY = 0, 0
-        if not globals.board.isCorrectColor(self):
-            self.snap()
-            return
-        if not self.dragging:
-            return
-        pos = Pos(e.x, e.y)
-        square = globals.board.getSquareWhichPosInside(pos)
-        if square == None:
-            return
-        if square and square.piece:
-            square.took()
-        else:
-            globals.board.moveSelected(square)
+    def reset(self):
+        self.unselect()
+        globals.board.unhighlight()
         self.snap()
+    def drop(self, e):
         if globals.board.lastHoveredOver:
             globals.board.lastHoveredOver.leave()
         globals.board.lastHoveredOver = None
+
+        global mouseX, mouseY
+        mouseX, mouseY = 0, 0
+
+        if not self.dragging:
+            return
+        if not globals.board.isCorrectColor(self):
+            return self.snap()
+        pos = Pos(e.x, e.y)
+        square = globals.board.getSquareWhichPosInside(pos)
+        if square == None:
+            return self.reset()
+        if square and square.piece:
+            if self.color != square.piece.color:
+                return square.took()
+            return self.reset()
+        globals.board.moveSelected(square)
     def drag(self, e):
         self.dragging = True
         global mouseX, mouseY

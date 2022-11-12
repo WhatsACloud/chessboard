@@ -9,7 +9,6 @@ class Canvas: # why james WHY
     def getDimensions(self):
         # return Pos(self.canvas.winfo_width(), self.canvas.winfo_height())
         pos = Pos(globals.window.winfo_width(), globals.window.winfo_height())
-        print(pos)
         return pos
     def getScaleFromFontSize(self, size): # returns relative i.e. betw. 1 and 0 size based on font size and screen size proportions
         return size / 1000

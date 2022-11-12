@@ -1,3 +1,4 @@
+import math
 import config
 
 class Pos(): # actual pos
@@ -22,6 +23,8 @@ class Pos(): # actual pos
         return self.__mul__(other)
     def __round__(self, ndigits=0):
         return type(self)(round(self.x, ndigits), round(self.y, ndigits))
+    def __floor__(self):
+        return type(self)(math.floor(self.x), math.floor(self.y))
     def __le__(self, other):
         other = self.isValid(other)
         return self.x <= other.x and self.y <= other.y

@@ -7,7 +7,7 @@ from promotePrompt import PromotionPrompt
 from notification import Notification
 from square import Square
 from globals import globals, HighlightType
-import time
+import math
 
 class Board(): # rows and columns start at 0, not 1
     def __init__(self, startPos):
@@ -19,6 +19,7 @@ class Board(): # rows and columns start at 0, not 1
             config.Color.white: [],
         }
         self.selected = None
+        self.canUnselect = False # used only in self.clickedOut
         self.promotionPrompt = None
         self.pieces = {
             config.Color.white: [],
@@ -32,8 +33,17 @@ class Board(): # rows and columns start at 0, not 1
         self.haveEnPassant = []
         self.lastHoveredOver = None
         globals.canvas.bindToResize(self.center)
+        self.bindEvents()
         # globals.canvas.canvas.bind("<Button-1>", self.click)
         # self.drawnBoard = draw.drawBoard(canvas, boardLength, config.SQUARE_LENGTH, startPos)
+    def bindEvents(self):
+        globals.canvas.canvas.bind("<Button-1>", self.clickedOut)
+    def unbindEvents(self):
+        pass
+    def clickedOut(self, e):
+        if self.selected and self.canUnselect:
+            return self.unselectFully()
+        self.canUnselect = True
     def validate(self, boardPos, isTaking=False):
         if isTaking:
             for take in self.possibleTakes:
@@ -81,22 +91,23 @@ class Board(): # rows and columns start at 0, not 1
             piece.notMoved = False
         return True
     def movePiece(self, boardPos, piece): # should ONLY move piece and call nextTurn
-        piece.movetoPos(self.getPosFromBoardPos(boardPos))
+        piece.snap(boardPos)
+        # piece.movetoPos(self.getPosFromBoardPos(boardPos))
         self.nextTurn()
     def takePiece(self, piece):
-        if not self.validate(piece.boardPos, True):
+        if not (piece and self.validate(piece.boardPos, True)):
             return False
         piece.remove()
         piece.square.setPiece(None)
         return True
     def moveSelected(self, square):
         selected = self.selected
-        self.unselect()
+        selected.unselect()
         if self.checkCanMovePiece(square, selected):
             self.movePiece(square.boardPos, selected)
 
         square.runAfterFunc(selected)
-        self.unhighlight()
+        selected.reset()
     def takenBySelected(self, square):
         selected = self.selected
         pieceToTake = square.pieceToTake # why is this None?
@@ -104,6 +115,7 @@ class Board(): # rows and columns start at 0, not 1
             self.unselectFully()
             if self.checkCanMovePiece(square, selected, True):
                 self.movePiece(square.boardPos, selected)
+        selected.reset()
     def isCorrectColor(self, piece):
         return globals.turn == piece.color
     def select(self, piece):
@@ -129,22 +141,24 @@ class Board(): # rows and columns start at 0, not 1
             return True
         return False
     def unselectFully(self):
+        self.canUnselect = False
+        print('unselected')
         if self.unselect():
             self.unhighlight()
     def getPosFromBoardPos(self, boardPos):
         return Pos(self.startPos.x + boardPos.x * config.SQUARE_LENGTH, self.startPos.y + boardPos.y * config.SQUARE_LENGTH)
     def getSquare(self, pos):
         return self.board[pos.x][pos.y]
-    def click(self, e):
-        mousePos = Pos(e.x, e.y)
-        square = self.getSquareWhichPosInside(mousePos)
-        if square:
-            square.select()
+    # def click(self, e):
+        # mousePos = Pos(e.x, e.y)
+        # square = self.getSquareWhichPosInside(mousePos)
+        # if square:
+            # square.select()
     def getSquareWhichPosInside(self, pos):
         start = self.getPosFromBoardPos(BoardPos(0, 0))
         end = self.getPosFromBoardPos(BoardPos(config.BOARD_LENGTH, config.BOARD_LENGTH))
         if pos.inside(start, end):
-            boardPos = round(pos / Pos(config.SQUARE_LENGTH, config.SQUARE_LENGTH)) - BoardPos(2, 2)
+            boardPos = math.floor((pos - self.startPos) / Pos(config.SQUARE_LENGTH, config.SQUARE_LENGTH))
             return self.board[int(boardPos.x)][int(boardPos.y)]
         return None
     def createBoard(self):
@@ -161,7 +175,6 @@ class Board(): # rows and columns start at 0, not 1
                 boardArr[row].append(square)
         return boardArr
     def center(self): # centers board
-        print('te')
         middle = globals.canvas.getDimensions() / 2
         diff = config.BOARD_LENGTH / 2 * config.SQUARE_LENGTH
         start = middle - Pos(diff, diff)
