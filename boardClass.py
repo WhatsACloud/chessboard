@@ -4,8 +4,10 @@ import draw
 import config
 import pieces
 from promotePrompt import PromotionPrompt
+from notification import Notification
 from square import Square
 from globals import globals, HighlightType
+import time
 
 class Board(): # rows and columns start at 0, not 1
     def __init__(self, startPos):
@@ -29,6 +31,7 @@ class Board(): # rows and columns start at 0, not 1
         self.pawns = []
         self.haveEnPassant = []
         self.lastHoveredOver = None
+        globals.canvas.bindToResize(self.center)
         # globals.canvas.canvas.bind("<Button-1>", self.click)
         # self.drawnBoard = draw.drawBoard(canvas, boardLength, config.SQUARE_LENGTH, startPos)
     def validate(self, boardPos, isTaking=False):
@@ -51,8 +54,11 @@ class Board(): # rows and columns start at 0, not 1
             if pawn.state == globals.PawnStates.CanEnPassant:
                 self.haveEnPassant.append(pawn)
         globals.turn = config.changeColor(globals.turn)
-        checkmated = self.kings[globals.turn].isCheckmated()
-        print(checkmated)
+        currentKing = self.kings[globals.turn]
+        if currentKing.isCheckmated():
+            Notification(f"{config.changeColor(globals.turn)} wins!")
+        elif currentKing.isStalemated():
+            Notification("Stalemate!")
     def newPromotionPrompt(self, piece, newSquare): # ah yes i am very intelligent
         if self.promotionPrompt:
             self.promotionPrompt.delete()
@@ -75,7 +81,7 @@ class Board(): # rows and columns start at 0, not 1
             piece.notMoved = False
         return True
     def movePiece(self, boardPos, piece): # should ONLY move piece and call nextTurn
-        piece.snap(boardPos)
+        piece.movetoPos(self.getPosFromBoardPos(boardPos))
         self.nextTurn()
     def takePiece(self, piece):
         if not self.validate(piece.boardPos, True):
@@ -93,7 +99,7 @@ class Board(): # rows and columns start at 0, not 1
         self.unhighlight()
     def takenBySelected(self, square):
         selected = self.selected
-        pieceToTake = square.pieceToTake
+        pieceToTake = square.pieceToTake # why is this None?
         if self.takePiece(pieceToTake):
             self.unselectFully()
             if self.checkCanMovePiece(square, selected, True):
@@ -154,3 +160,12 @@ class Board(): # rows and columns start at 0, not 1
                 color = draw.switchColor(color)
                 boardArr[row].append(square)
         return boardArr
+    def center(self): # centers board
+        print('te')
+        middle = globals.canvas.getDimensions() / 2
+        diff = config.BOARD_LENGTH / 2 * config.SQUARE_LENGTH
+        start = middle - Pos(diff, diff)
+        self.startPos = start
+        for row in self.board:
+            for square in row:
+                square.moveto(self.getPosFromBoardPos(square.boardPos))

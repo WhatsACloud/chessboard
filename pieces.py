@@ -156,14 +156,20 @@ class King(Piece):
         origPiece.moveto(origSquare.boardPos)
         newSquare.piece = newSquarePiece
         return returnVal
-    def isCheckmated(self):
+    def anyMoveAvailable(self):
         for piece in globals.board.pieces[self.color]:
             moves, takes = piece.getMoves()
             if len([*moves, *takes]) > 0:
-                print(self.color, piece)
-                print(moves, takes)
                 return False
         return True
+    def isStalemated(self):
+        if self.isChecked():
+            return False
+        return self.anyMoveAvailable()
+    def isCheckmated(self):
+        if not self.isChecked():
+            return False
+        return self.anyMoveAvailable()
         
 class Knight(Piece):
     imgName = "knight"

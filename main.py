@@ -5,15 +5,16 @@ import canvas
 import game
 import config
 import notification
+from globals import globals
 
 def main():
-    window = tk.Tk()
-    window.geometry(f"{config.WIDTH}x{config.HEIGHT}")
+    globals.window = tk.Tk()
+    globals.window.geometry(f"{config.WIDTH}x{config.HEIGHT}")
     # window.state('zoomed')
-    canvas.initCanvas(window)
-    game.Game(Pos(config.startX, config.startY), config.BOARD_LENGTH)
+    canvas.initCanvas(globals.window)
+    globals.game = game.Game(Pos(config.startX, config.startY), config.BOARD_LENGTH)
     # notification.Notification(" GAME END\nWHITE WINS")
-    window.mainloop()
+    globals.window.mainloop()
 
 if __name__ == "__main__":
     main()

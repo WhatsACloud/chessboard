@@ -6,6 +6,7 @@ from globals import globals, HighlightType
 import config
 import pieces
 import draw
+import gc
 
 def setupPieces(color):
     firstRow, secondRow = None, None
@@ -28,20 +29,30 @@ def setupPieces(color):
 
 class Game():
     def __init__(self, startPos, length):
-        initBoard(startPos, Square)
+        self.startPos = startPos
+        self.length = length
+        self.init()
+    def init(self):
+        initBoard(self.startPos, Square)
         globals.turn = config.Color.white
+        self.setUp()
+    def setUp(self):
+        setupPieces(config.Color.black)
+        setupPieces(config.Color.white)
 
-        # setupPieces(config.Color.black)
-        # setupPieces(config.Color.white)
-
-        pieces.King(BoardPos(0, 1), config.Color.black)
-        pieces.Bishop(BoardPos(0, 0), config.Color.black)
-        pieces.Knight(BoardPos(1, 0), config.Color.black)
-        pieces.Bishop(BoardPos(1, 1), config.Color.black)
-        pieces.Bishop(BoardPos(0, 2), config.Color.black)
-        pieces.Knight(BoardPos(1, 3), config.Color.black)
-        pieces.King(BoardPos(2, 7), config.Color.white)
-        pieces.Queen(BoardPos(2, 5), config.Color.white)
+        # pieces.King(BoardPos(0, 1), config.Color.black)
+        # pieces.Bishop(BoardPos(0, 0), config.Color.black)
+        # pieces.Knight(BoardPos(1, 0), config.Color.black)
+        # pieces.Bishop(BoardPos(1, 1), config.Color.black)
+        # pieces.Bishop(BoardPos(0, 2), config.Color.black)
+        # pieces.Knight(BoardPos(1, 3), config.Color.black)
+        # pieces.King(BoardPos(2, 7), config.Color.white)
+        # pieces.Queen(BoardPos(2, 5), config.Color.white)
 
         # pieces.Rook(BoardPos(4, 4), config.Color.black)
         # pieces.Knight(BoardPos(4, 3), config.Color.white)
+    def reset():
+        print(len(gc.get_objects()))
+        del globals.board
+        print(len(gc.get_objects()))
+        self.init()

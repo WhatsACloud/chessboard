@@ -30,7 +30,7 @@ class Piece():
         imgObj = globals.canvas.canvas.create_image(
             config.SQUARE_LENGTH,
             config.SQUARE_LENGTH,
-            image=img
+            image=img,
         )
         return imgObj
     def drawImg(self):

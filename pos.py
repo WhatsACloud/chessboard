@@ -18,6 +18,8 @@ class Pos(): # actual pos
     def __mul__(self, other):
         other = self.isValid(other)
         return type(self)(self.x * other.x, self.y * other.y)
+    def __rmul__(self, other):
+        return self.__mul__(other)
     def __round__(self, ndigits=0):
         return type(self)(round(self.x, ndigits), round(self.y, ndigits))
     def __le__(self, other):
@@ -36,10 +38,10 @@ class Pos(): # actual pos
         return start <= self <= end
     def isValid(self, other): # check if variable is of same class
         isPos = isinstance(other, type(self))
-        isInt = isinstance(other, int)
-        if not isPos and not isInt:
+        isNum = isinstance(other, int) or isinstance(other, float)
+        if not isPos and not isNum:
             raise TypeError(f"Second variable operating is not of class {type(self)} but is of type {type(other)}")
-        if isInt:
+        if isNum:
             return type(self)(other, other)
         return other
 

@@ -1,8 +1,8 @@
 TODO
-1. Check, checkmate, stalemate
-2. Fix bug of when piece is dragged outside board
-3. Actual game support
-4. Shows which pieces have been taken by who
-5. Add scaling for chess board
-6. Prevent user from castling when king is checked
-
+Check, checkmate, stalemate
+Fix bug of when piece is dragged outside board
+Actual game support
+Shows which pieces have been taken by who
+Prevent user from castling when king is checked
+Add reverse board function (as in visually)
+Fix bug of when piece is dragged and dropped onto the same square where it is

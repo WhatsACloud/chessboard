@@ -1,6 +1,6 @@
 from pos import Pos, BoardPos
 from globals import globals
-from config import SQUARE_LENGTH
+import canvasObjs
 
 BLACK = "#076e00"
 WHITE = "#ffffe3"
@@ -15,13 +15,3 @@ def switchColor(color):
         return WHITE
     if color == WHITE:
         return BLACK
-def drawSquare(pos, color):
-    startX, startY = pos.x, pos.y
-    return globals.canvas.canvas.create_rectangle(
-            startX,
-            startY,
-            startX + SQUARE_LENGTH,
-            startY + SQUARE_LENGTH,
-            outline=color,
-            fill=color
-        )

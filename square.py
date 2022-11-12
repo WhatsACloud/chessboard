@@ -4,7 +4,7 @@ from globals import globals, HighlightType
 
 class Square():
     def __init__(self, pos, boardPos, color):
-        self.id = draw.drawSquare(pos, color)
+        self.id = self.createObj(pos, color)
         self.boardPos = boardPos
         self.origColor = color
         self.canvasObj = None
@@ -26,6 +26,16 @@ class Square():
         globals.canvas.canvas.tag_bind(self.id, evt, func)
     def bindEvents(self):
         self.bindEvent("<Button-1>", self.click)
+    def createObj(self, pos, color):
+        startX, startY = pos.x, pos.y
+        return globals.canvas.canvas.create_rectangle(
+                startX,
+                startY,
+                startX + config.SQUARE_LENGTH,
+                startY + config.SQUARE_LENGTH,
+                outline=color,
+                fill=color,
+            )
     def enter(self):
         if globals.board.selected and globals.board.selected.dragging and not self.squareHighlight:
             self.drawSquare()
@@ -59,6 +69,10 @@ class Square():
             outline=draw.GREY,
             width=width
         )
+    def moveto(self, pos):
+        globals.canvas.canvas.moveto(self.id, pos.x, pos.y)
+        if self.piece:
+            self.piece.snap()
     def deleteCircle(self):
         if self.canvasObj:
             # globals.canvas.canvas.tag_unbind(self.canvasObj, "<Button-1>")
