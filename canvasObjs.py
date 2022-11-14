@@ -4,6 +4,7 @@ from globals import globals
 from pos import Scale, Pos
 import config
 from abc import ABC, abstractmethod
+from PIL import Image, ImageTk
 
 class AbsObj(ABC): # pos is in px, scale is relative i.e. 0 to 10
     def __init__(self, scale=None, size=None):
@@ -135,4 +136,3 @@ class Button: # a button on tk canvas because yes
         globals.canvas.canvas.tag_unbind(self.text.obj, "<Button-1>")
         self.bg.delete()
         self.text.delete()
-

@@ -4,7 +4,9 @@ from globals import globals
 import config
 import pieces
 import draw
-from piece import Piece
+from piece import Piece, PieceImg
+
+import gc
 
 pieceTypes = [ # name of images of pieces that can pawn can promote to
     pieces.Queen,
@@ -14,10 +16,9 @@ pieceTypes = [ # name of images of pieces that can pawn can promote to
 ]
 
 class PromotionPiece:
-    def __init__(self, squareImgObj, pieceImg, pieceImgObj, pieceType, prompt):
+    def __init__(self, squareImgObj, pieceImg, pieceType, prompt):
         self.squareImgObj = squareImgObj
         self.pieceImg = pieceImg
-        self.pieceImgObj = pieceImgObj
         self.pieceType = pieceType
         self.prompt = prompt
         self.bindEvents()
@@ -29,7 +30,7 @@ class PromotionPiece:
         self.pieceType(square.boardPos, color)
         self.prompt.delete()
     def bindEvent(self, event, func):
-        globals.canvas.canvas.tag_bind(self.pieceImgObj, event, func)
+        self.pieceImg.bindEvent(event, func)
     def bindEvents(self):
         self.bindEvent("<Button-1>", self.click)
 
@@ -44,10 +45,9 @@ class PromotionPrompt:
         for pieceType in pieceTypes:
             startPos = globals.board.getPosFromBoardPos(toMoveTo)
             squareImgObj = self.drawSquare(startPos)
-            img = pieceType.getImg(piece.color, pieceType.imgName)
-            imgObj = pieceType.getImgObj(img)
-            globals.canvas.canvas.moveto(imgObj, startPos.x, startPos.y)
-            self.squares.append(PromotionPiece(squareImgObj, img, imgObj, pieceType, self))
+            imgObj = PieceImg(piece.color, pieceType.imgName)
+            imgObj.moveto(startPos)
+            self.squares.append(PromotionPiece(squareImgObj, imgObj, pieceType, self))
             toMoveTo += increment
         self.funcId = globals.canvas.canvas.bind("<ButtonRelease-1>", self.release)
     def release(self, e):
@@ -57,9 +57,11 @@ class PromotionPrompt:
         globals.canvas.canvas.unbind("<Button-1>", self.funcId)
         self.delete()
     def delete(self):
+        if not self.squares:
+            return
         for square in self.squares:
             globals.canvas.canvas.delete(square.squareImgObj)
-            globals.canvas.canvas.delete(square.pieceImgObj)
+            square.pieceImg.delete()
             square.prompt = None
         self.squares = None
     def drawSquare(self, startPos):

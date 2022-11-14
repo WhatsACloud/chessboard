@@ -7,14 +7,30 @@ from promotePrompt import PromotionPrompt
 from notification import Notification
 from square import Square
 from globals import globals, HighlightType
+from extraUI import extraUI
 import math
+
+class Taken:
+    def __init__(self):
+        self.table = {
+            config.Color.black: [],
+            config.Color.white: [],
+        }
+    def add(self, piece):
+        self.table[piece.color].append(piece)
+        globals.board.extraUI.takenPieces[piece.color].update()
+    def getTable(self, color):
+        return self.table[color]
+
 
 class Board(): # rows and columns start at 0, not 1
     def __init__(self, startPos):
+        self.extraUI = extraUI(startPos)
         self.startPos = startPos
         self.board = self.createBoard()
         self.possibleMoves = []
-        self.taken = {
+        self.taken = Taken()
+        self.take = {
             config.Color.black: [],
             config.Color.white: [],
         }
@@ -142,18 +158,12 @@ class Board(): # rows and columns start at 0, not 1
         return False
     def unselectFully(self):
         self.canUnselect = False
-        print('unselected')
         if self.unselect():
             self.unhighlight()
     def getPosFromBoardPos(self, boardPos):
         return Pos(self.startPos.x + boardPos.x * config.SQUARE_LENGTH, self.startPos.y + boardPos.y * config.SQUARE_LENGTH)
     def getSquare(self, pos):
         return self.board[pos.x][pos.y]
-    # def click(self, e):
-        # mousePos = Pos(e.x, e.y)
-        # square = self.getSquareWhichPosInside(mousePos)
-        # if square:
-            # square.select()
     def getSquareWhichPosInside(self, pos):
         start = self.getPosFromBoardPos(BoardPos(0, 0))
         end = self.getPosFromBoardPos(BoardPos(config.BOARD_LENGTH, config.BOARD_LENGTH))

@@ -1,5 +1,5 @@
 import tkinter as tk
-import types
+from PIL import Image, ImageTk
 
 from pos import Pos, BoardPos
 from globals import globals
@@ -10,42 +10,69 @@ import copy
 
 mouseX, mouseY = 0, 0
 
+class PieceImg:
+    def __init__(self, color, imgName):
+        self.img = PieceImg.getImg(color, imgName)
+        self.photoImg = ImageTk.PhotoImage(self.img, Image.ANTIALIAS)
+        self.obj = None
+        self.createObj()
+    def bindEvent(self, evt, func):
+        globals.canvas.canvas.tag_bind(self.obj, evt, func)
+    def unbindEvent(self, evt):
+        globals.canvas.canvas.tag_unbind(self.obj, evt)
+    @staticmethod
+    def getPieceImg(color, imgName):
+        return f"assets/{color}_{imgName}.png"
+    @staticmethod
+    def getImg(color, imgName):
+        # img = tk.PhotoImage(file=PieceImg.getPieceImg(color, imgName))
+        img = Image.open(PieceImg.getPieceImg(color, imgName))
+        return img
+    def createObj(self):
+        if self.obj:
+            globals.canvas.canvas.delete(self.obj)
+        self.obj = globals.canvas.canvas.create_image(
+            50,
+            50,
+            image=self.photoImg,
+        )
+        globals.canvas.canvas.moveto(self.obj, 50, 50)
+    def hide(self):
+        globals.canvas.canvas.delete(self.obj)
+    def resize(self, width):
+        self.img = self.img.resize((width, width))
+        self.photoImg = ImageTk.PhotoImage(self.img, Image.ANTIALIAS)
+        self.createObj()
+    def move(self, amt):
+        globals.canvas.canvas.move(self.obj, amt.x, amt.y)
+    def moveto(self, pos):
+        globals.canvas.canvas.moveto(self.obj, pos.x, pos.y)
+    def delete(self):
+        self.hide()
+        self.img = None
+        self.photoImg = None
+        self.obj = None
+
 class Piece():
     def __init__(self, boardPos, color):
         self.boardPos = boardPos
-        self.img = tk.PhotoImage(file=Piece.getPieceImg(color, self.imgName))
-        self.imgObj = None
-        self.drawImg()
+        self.imgObj = PieceImg(color, self.imgName)
         self.square = globals.board.getSquare(boardPos)
         self.dragging = False
         self.color = color
         self.updateBoard()
         self.snap()
-        globals.board.pieces[self.color].append(self)
-    @staticmethod
-    def getImg(color, imgName):
-        img = tk.PhotoImage(file=Piece.getPieceImg(color, imgName))
-        return img
-    def getImgObj(img):
-        imgObj = globals.canvas.canvas.create_image(
-            config.SQUARE_LENGTH,
-            config.SQUARE_LENGTH,
-            image=img,
-        )
-        return imgObj
-    def drawImg(self):
-        self.imgObj = globals.canvas.canvas.create_image(config.SQUARE_LENGTH, config.SQUARE_LENGTH, image=self.img)
         self.bindEvents()
+        globals.board.pieces[self.color].append(self)
     def remove(self):
         self.delete()
-        globals.board.taken[self.color].append(self)
+        globals.board.taken.add(self)
         globals.board.pieces[self.color].remove(self)
     def delete(self):
         self.deleteImg()
         self.square.setPiece(None)
     def deleteImg(self):
-        globals.canvas.canvas.delete(self.imgObj)
-        self.imgObj = None
+        self.imgObj.hide()
     def updateBoard(self):
         globals.board.getSquare(self.boardPos).piece = self
     def unselect(self):
@@ -90,7 +117,7 @@ class Piece():
         self.moveto(boardPos)
         self.dragging = False
     def bindEvent(self, event, func):
-        globals.canvas.canvas.tag_bind(self.imgObj, event, func)
+        self.imgObj.bindEvent(event, func)
     def bindEvents(self):
         self.bindEvent('<Button1-Motion>', self.drag)
         self.bindEvent('<Button1-ButtonRelease>', self.drop)
@@ -130,7 +157,7 @@ class Piece():
             moveX = 0
             moveY = 0
         mouseX, mouseY = x, y
-        globals.canvas.canvas.move(self.imgObj, moveX, moveY)
+        self.imgObj.move(Pos(moveX, moveY))
         
         square = globals.board.getSquareWhichPosInside(Pos(mouseX, mouseY))
         if not square or globals.board.lastHoveredOver == square:
@@ -141,9 +168,6 @@ class Piece():
         globals.board.lastHoveredOver = square
         # globals.canvas.canvas.moveto(self.imgObj, x, y)
     def movetoPos(self, pos):
-        globals.canvas.canvas.moveto(self.imgObj, pos.x, pos.y)
+        self.imgObj.moveto(pos)
     def select(self, e):
         globals.board.select(self)
-    @staticmethod
-    def getPieceImg(color, imgName):
-        return f"assets/{color}_{imgName}.png"
