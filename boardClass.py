@@ -1,4 +1,6 @@
 # Note: board array should be rows of columns
+import math
+
 from pos import BoardPos, Pos
 import draw
 import config
@@ -8,7 +10,7 @@ from notification import Notification
 from square import Square
 from globals import globals, HighlightType
 from extraUI import extraUI
-import math
+from history import History
 
 class Taken:
     def __init__(self):
@@ -19,13 +21,16 @@ class Taken:
     def add(self, piece):
         self.table[piece.color].append(piece)
         globals.board.extraUI.takenPieces[piece.color].update()
+    def remove(self, piece):
+        self.table[piece.color].remove(piece)
+        globals.board.extraUI.takenPieces[piece.color].update()
     def getTable(self, color):
         return self.table[color]
-
 
 class Board(): # rows and columns start at 0, not 1
     def __init__(self, startPos):
         self.reversed = False
+        self.history = History()
         self.extraUI = extraUI(startPos)
         self.startPos = startPos
         self.board = self.createBoard()
@@ -129,19 +134,23 @@ class Board(): # rows and columns start at 0, not 1
         return True
     def moveSelected(self, square):
         selected = self.selected
+        origin = BoardPos(selected.boardPos.x, selected.boardPos.y)
         selected.unselect()
         if self.checkCanMovePiece(square, selected):
             self.movePiece(square.boardPos, selected)
+            self.history.add(origin, square.boardPos, None, square.after)
 
         square.runAfterFunc(selected)
         selected.reset()
     def takenBySelected(self, square):
         selected = self.selected
+        origin = BoardPos(selected.boardPos.x, selected.boardPos.y)
         pieceToTake = square.pieceToTake # why is this None?
         if self.takePiece(pieceToTake):
             self.unselectFully()
             if self.checkCanMovePiece(square, selected, True):
                 self.movePiece(square.boardPos, selected)
+                self.history.add(origin, square.boardPos, pieceToTake)
         selected.reset()
     def isCorrectColor(self, piece):
         return globals.turn == piece.color

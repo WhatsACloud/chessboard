@@ -87,6 +87,11 @@ class Text(AbsObj):
     def createObj(self): # because yes
         pos = self.pos
         return globals.canvas.canvas.create_text(pos.x, pos.y, text=self.text, fill=self.color, font=(config.FONT, self.getScaledFontSize()))
+    def snap(self):
+        if self.centerPoint:
+            self.moveto(globals.canvas.centerOf(globals.canvas.toScale(self.size), self.centerPoint))
+            return
+        self.moveto()
     def moveto(self, scale=None):
         if scale == None:
             scale = self.scale
@@ -107,8 +112,6 @@ class Button: # a button on tk canvas because yes
         self.click = clickFunc
         self.update()
         self.bindEvents()
-    def __del__(self):
-        print('deleted button')
     def moveto(self, scale):
         diff = self.bg.scale - scale
         self.bg.scale = scale
@@ -118,6 +121,7 @@ class Button: # a button on tk canvas because yes
     def update(self):
         self.bg.update()
         self.text.update()
+        self.text.snap()
     def bindEvent(self, evt, func):
         globals.canvas.canvas.tag_bind(self.bg.obj, evt, func)
         globals.canvas.canvas.tag_bind(self.text.obj, evt, func)

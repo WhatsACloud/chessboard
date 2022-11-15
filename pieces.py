@@ -23,7 +23,17 @@ class Rook(Piece):
     def __init__(self, boardPos, color):
         super().__init__(boardPos, color)
         self.setMoves(horizontal)
-        self.notMoved = True
+        self._notMoved = True
+        self.prevNotMoved = None
+    @property
+    def notMoved(self):
+        return self._notMoved
+    @notMoved.setter
+    def notMoved(self, notMoved):
+        self.prevNotMoved = self._notMoved
+        self._notMoved = notMoved
+    def setNotMovedToPrev(self):
+        self.notMoved = self.prevNotMoved
 
 class Bishop(Piece):
     imgName = "bishop"
@@ -41,7 +51,8 @@ class Pawn(Piece):
     imgName = "pawn"
     def __init__(self, boardPos, color):
         super().__init__(boardPos, color)
-        self.state = globals.PawnStates.OriginalPos
+        self._state = globals.PawnStates.OriginalPos
+        self.prevState = None
         direction = Direction.up
         if color == config.Color.black:
             direction = Direction.down
@@ -58,6 +69,15 @@ class Pawn(Piece):
             ]
         )
         globals.board.pawns.append(self)
+    @property
+    def state(self):
+        return self._state
+    @state.setter
+    def state(self, state):
+        self.prevState = self._state
+        self._state = state
+    def setStateToPrev(self):
+        self.state = self.prevState
     def canPromote(self, boardPos):
         end = 0
         if self.color == config.Color.black:
@@ -100,12 +120,33 @@ def canCastleLeft(piece, toMoveTo):
         return True
     return False
 
+class After:
+    def __init__(self, after, reverse):
+        self.after = after
+        self.reverse = reverse
+
+def reverseAfterCastleRight(piece):
+    rook = globals.board.getSquare(BoardPos(5, piece.boardPos.y)).piece
+    if type(rook) != Rook:
+        return
+    rook.snap(BoardPos(7, piece.boardPos.y))
+
+def reverseAfterCastleLeft(piece):
+    rook = globals.board.getSquare(BoardPos(3, piece.boardPos.y)).piece
+    if type(rook) != Rook:
+        return
+    rook.snap(BoardPos(0, piece.boardPos.y))
+
 def afterCastleRight(piece):
     rook = globals.board.getSquare(BoardPos(7, piece.boardPos.y)).piece
+    if type(rook) != Rook:
+        return
     rook.snap(BoardPos(5, piece.boardPos.y))
 
 def afterCastleLeft(piece):
     rook = globals.board.getSquare(BoardPos(0, piece.boardPos.y)).piece
+    if type(rook) != Rook:
+        return
     rook.snap(BoardPos(3, piece.boardPos.y))
 
 class Attacker: # container class
@@ -121,16 +162,26 @@ class King(Piece):
             [
                 *changeAmts(diagonal, 1),
                 *changeAmts(horizontal, 1),
-                Move([Direction.right * 2], cond=canCastleRight, after=afterCastleRight, amt=1),
-                Move([Direction.left * 2], cond=canCastleLeft, after=afterCastleLeft, amt=1),
+                Move([Direction.right * 2], cond=canCastleRight, after=After(afterCastleRight, reverseAfterCastleRight), amt=1),
+                Move([Direction.left * 2], cond=canCastleLeft, after=After(afterCastleLeft, reverseAfterCastleRight), amt=1),
             ],
             [
                 *changeAmts(diagonal, 1, Take),
                 *changeAmts(horizontal, 1, Take),
             ]
         )
-        self.notMoved = True
+        self._notMoved = True
+        self.prevNotMoved = None
         globals.board.kings[color] = self
+    @property
+    def notMoved(self):
+        return self._notMoved
+    @notMoved.setter
+    def notMoved(self, notMoved):
+        self.prevNotMoved = self._notMoved
+        self._notMoved = notMoved
+    def setNotMovedToPrev(self):
+        self.notMoved = self.prevNotMoved
     def isChecked(self):
         for pieceType in globals.attackAngles[self.color]:
             takes = globals.attackAngles[self.color][pieceType]
