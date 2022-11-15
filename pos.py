@@ -10,6 +10,8 @@ class Pos(): # actual pos
     def __sub__(self, other):
         other = self.isValid(other)
         return type(self)(self.x - other.x, self.y - other.y)
+    def __rsub__(self, other):
+        return type(self)(other, other) - self
     def __add__(self, other):
         other = self.isValid(other)
         return type(self)(self.x + other.x, self.y + other.y)

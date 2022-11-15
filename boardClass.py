@@ -25,6 +25,7 @@ class Taken:
 
 class Board(): # rows and columns start at 0, not 1
     def __init__(self, startPos):
+        self.reversed = False
         self.extraUI = extraUI(startPos)
         self.startPos = startPos
         self.board = self.createBoard()
@@ -85,10 +86,20 @@ class Board(): # rows and columns start at 0, not 1
             Notification(f"{config.changeColor(globals.turn)} wins!")
         elif currentKing.isStalemated():
             Notification("Stalemate!")
+        self.reverseBoard()
     def newPromotionPrompt(self, piece, newSquare): # ah yes i am very intelligent
         if self.promotionPrompt:
             self.promotionPrompt.delete()
         self.promotionPrompt = PromotionPrompt(piece, newSquare)
+    def reverseBoard(self): # visually
+        self.reversed = globals.turn == config.Color.black
+        for row in self.board:
+            for square in row:
+                square.moveto(self.getPosFromBoardPos(square.boardPos))
+        self.extraUI.takenPieces[config.Color.white].updateYAxis()
+        self.extraUI.takenPieces[config.Color.black].updateYAxis()
+        self.extraUI.takenPieces[config.Color.white].update()
+        self.extraUI.takenPieces[config.Color.black].update()
     def checkCanMovePiece(self, newSquare, piece, isTaking=False): # as in can move to SQUARE
         if not self.isCorrectColor(piece):
             return False
@@ -161,7 +172,11 @@ class Board(): # rows and columns start at 0, not 1
         if self.unselect():
             self.unhighlight()
     def getPosFromBoardPos(self, boardPos):
-        return Pos(self.startPos.x + boardPos.x * config.SQUARE_LENGTH, self.startPos.y + boardPos.y * config.SQUARE_LENGTH)
+        reversedBoardPos = (config.BOARD_LENGTH - 1) - boardPos
+        pos = self.startPos + boardPos * config.SQUARE_LENGTH
+        if self.reversed:
+            pos = self.startPos + reversedBoardPos * config.SQUARE_LENGTH
+        return pos
     def getSquare(self, pos):
         return self.board[pos.x][pos.y]
     def getSquareWhichPosInside(self, pos):
