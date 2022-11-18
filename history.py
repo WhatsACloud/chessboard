@@ -34,10 +34,6 @@ class HistoryItem:
         # origin.piece.snap()
         globals.turn = config.changeColor(globals.turn)
         globals.board.reverseBoard()
-        if piece.imgName == "pawn": # bad code but I'll only change it if another piece is like this
-            piece.setStateToPrev()
-        if piece.imgName == "rook" or piece.imgName == "king":
-            piece.setNotMovedToPrev()
     def forward(self):
         if self.pieceTaken:
             globals.board.takePiece(self.pieceTaken)
@@ -60,6 +56,7 @@ class History:
         self.current = new
     def back(self, amt=1):
         for _ in range(amt):
+            globals.board.decrementCurrentIndex()
             if not self.current.prev:
                 return
             self.current.forwarded = False
@@ -67,6 +64,7 @@ class History:
             self.current = self.current.prev
     def forward(self, amt=1):
         for _ in range(amt):
+            globals.board.incrementCurrentIndex()
             if not self.current.next:
                 if not self.current.forwarded:
                     self.current.forwarded = True

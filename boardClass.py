@@ -29,6 +29,9 @@ class Taken:
 
 class Board(): # rows and columns start at 0, not 1
     def __init__(self, startPos):
+        self._currentIndex = 0 # WHY
+        self.highestIndex = 0
+        self._prevCurrentIndex = 0
         self.reversed = False
         self.history = History()
         self.extraUI = extraUI(startPos)
@@ -58,6 +61,21 @@ class Board(): # rows and columns start at 0, not 1
         self.bindEvents()
         # globals.canvas.canvas.bind("<Button-1>", self.click)
         # self.drawnBoard = draw.drawBoard(canvas, boardLength, config.SQUARE_LENGTH, startPos)
+    @property
+    def currentIndex(self):
+        return self._currentIndex
+    def incrementCurrentIndex(self):
+        self._currentIndex += 1
+    def decrementCurrentIndex(self):
+        if self._currentIndex > 0:
+            self._currentIndex -= 1
+    def updateHighestIndex(self):
+        if self.currentIndex > self._prevCurrentIndex:
+            self._prevCurrentIndex = self.currentIndex
+            self.highestIndex = self.currentIndex
+            return
+        else:
+            self._prevCurrentIndex = self.currentIndex
     def bindEvents(self):
         globals.canvas.canvas.bind("<Button-1>", self.clickedOut)
     def unbindEvents(self):
@@ -92,6 +110,9 @@ class Board(): # rows and columns start at 0, not 1
         elif currentKing.isStalemated():
             Notification("Stalemate!")
         self.reverseBoard()
+        print("what???????")
+        self.incrementCurrentIndex()
+        self.updateHighestIndex()
     def newPromotionPrompt(self, piece, newSquare): # ah yes i am very intelligent
         if self.promotionPrompt:
             self.promotionPrompt.delete()
@@ -114,18 +135,18 @@ class Board(): # rows and columns start at 0, not 1
         if self.kings[piece.color].wouldSelfBeChecked(piece, newSquare):
             return False
         if piece.imgName == "pawn": # bad code but I'll only change it if another piece is like this
-            if piece.state == globals.PawnStates.OriginalPos:
-                piece.state = globals.PawnStates.CanEnPassant
             if piece.canPromote(newSquare.boardPos):
                 piece.promote(newSquare.boardPos)
                 return False
-        if piece.imgName == "rook" or piece.imgName == "king":
-            piece.notMoved = False
         return True
     def movePiece(self, boardPos, piece): # should ONLY move piece and call nextTurn
         piece.snap(boardPos)
-        # piece.movetoPos(self.getPosFromBoardPos(boardPos))
         self.nextTurn()
+        if piece.imgName == "pawn":
+            if piece.state == globals.PawnStates.OriginalPos:
+                piece.state = globals.PawnStates.CanEnPassant
+        if piece.imgName == "rook" or piece.imgName == "king":
+            piece.notMoved = False
     def takePiece(self, piece):
         if not (piece and self.validate(piece.boardPos, True)):
             return False
