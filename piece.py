@@ -79,6 +79,7 @@ class Piece():
     def delete(self):
         self.deleteImg()
         self.square.setPiece(None)
+        self.square.piece = None
     def createImg(self):
         self.imgObj.createObj()
     def deleteImg(self):

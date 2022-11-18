@@ -43,7 +43,7 @@ class Game():
         pieces.King(BoardPos(4, 7), config.Color.white)
         pieces.Rook(BoardPos(0, 7), config.Color.white)
         pieces.Rook(BoardPos(7, 7), config.Color.white)
-        pieces.King(BoardPos(4, 0), config.Color.black)
+        pieces.King(BoardPos(6, 0), config.Color.black)
         pieces.Rook(BoardPos(0, 0), config.Color.black)
         pieces.Pawn(BoardPos(4, 1), config.Color.white)
     def reset():

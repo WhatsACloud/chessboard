@@ -23,11 +23,27 @@ class PromotionPiece:
         self.prompt = prompt
         self.bindEvents()
     def click(self, e):
-        globals.board.movePiece(self.prompt.toMoveTo, self.prompt.promotingPawn)
-        square = self.prompt.promotingPawn.square
-        color = self.prompt.promotingPawn.color
-        self.prompt.promotingPawn.delete()
-        self.pieceType(square.boardPos, color)
+        originalPos = self.prompt.promotingPawn.boardPos
+        toMoveTo = self.prompt.toMoveTo
+        promotingPawn = self.prompt.promotingPawn
+        pieceType = self.pieceType
+        def beforeFunc(p=None):
+            piece = globals.board.getSquare(toMoveTo).piece
+            if piece == None:
+                print("uh oh check promotePrompt line 30")
+                return
+            piece.delete()
+            promotingPawn.createImg()
+            promotingPawn.bindEvents()
+            promotingPawn.snap(toMoveTo)
+        def afterFunc(p=None):
+            globals.board.movePiece(toMoveTo, promotingPawn)
+            color = promotingPawn.color
+            promotingPawn.delete()
+            pieceType(toMoveTo, color)
+        afterFunc()
+        after = pieces.After(afterFunc, beforeFunc)
+        globals.board.history.add(originalPos, self.prompt.toMoveTo, None, after)
         self.prompt.delete()
     def bindEvent(self, event, func):
         self.pieceImg.bindEvent(event, func)

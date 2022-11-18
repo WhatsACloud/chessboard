@@ -27,6 +27,8 @@ class HistoryItem:
         origin = globals.board.getSquare(self.origin)
         piece = to.piece
         self.reverseAfterFunc(piece)
+        piece = to.piece
+        print(piece, self.origin, to)
         piece.moveto(self.origin)
         if self.pieceTaken:
             self.pieceTaken.reAdd(to)
