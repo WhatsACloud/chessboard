@@ -8,6 +8,10 @@ class HistoryItem:
         self.after = after
         self.origin = origin
         self.to = to
+
+        self.pieceTakenPos = None
+        if pieceTaken:
+            self.pieceTakenPos = pieceTaken.boardPos
         self.forwarded = False
         self.pieceTaken = pieceTaken
     def reverseAfterFunc(self, piece):
@@ -28,11 +32,13 @@ class HistoryItem:
         piece = to.piece
         self.reverseAfterFunc(piece)
         piece = to.piece
-        print(piece, self.origin, to)
         piece.moveto(self.origin)
         if self.pieceTaken:
-            self.pieceTaken.reAdd(to)
+            self.pieceTaken.reAdd(globals.board.getSquare(self.pieceTakenPos))
             self.pieceTaken.snap()
+            self.pieceTaken.bindEvents()
+        if piece.imgName == "pawn" and piece in globals.board.haveEnPassant:
+            globals.board.haveEnPassant.remove(piece)
         # origin.piece.snap()
         globals.turn = config.changeColor(globals.turn)
         globals.board.reverseBoard()
@@ -40,7 +46,9 @@ class HistoryItem:
         if self.pieceTaken:
             globals.board.takePiece(self.pieceTaken)
         globals.board.movePiece(self.to.boardPos, self.origin.piece)
-        self.afterFunc(self.to.piece)
+        self.afterFunc(self.to.piece) # need fix this broken code ltr
+        if piece.imgName == "pawn" and piece.state == globals.PawnStates.CanEnPassant:
+            globals.board.haveEnPassant.append(piece)
 
 class Base:
     def __init__(self):

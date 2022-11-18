@@ -110,7 +110,6 @@ class Board(): # rows and columns start at 0, not 1
         elif currentKing.isStalemated():
             Notification("Stalemate!")
         self.reverseBoard()
-        print("what???????")
         self.incrementCurrentIndex()
         self.updateHighestIndex()
     def newPromotionPrompt(self, piece, newSquare): # ah yes i am very intelligent

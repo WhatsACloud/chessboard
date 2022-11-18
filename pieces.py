@@ -22,22 +22,30 @@ class AttrHist: # my iq is equal to the number of girls who aren't creeped out b
     def __init__(self, val):
         self.hist = {}
         self.indexes = []
+        self.highestIndex = 0
         self.set(val)
     def set(self, item):
         # print(self.hist, self.indexes)
         # print(globals.board.currentIndex)
-        if globals.board.currentIndex != globals.board.highestIndex:
-            print("helpkdfjsdffbqefuqrefqrefuqefuqrefbwqefjqefuqefueqrf")
+        print("help me", globals.board.currentIndex, globals.board.highestIndex, self.highestIndex)
+        if self.highestIndex != globals.board.highestIndex:
+            print("helpkdfjsdffbqefuqrefqrefuqefuqrefbwqefjqefuqefueqrf", self.hist, self.indexes)
             toRemove = self.indexes[globals.board.currentIndex:]
             self.indexes = self.indexes[:globals.board.currentIndex]
             for index in toRemove:
                 del self.hist[index]
+            self.highestIndex = globals.board.highestIndex
+            print("this is odd", self.highestIndex, self.hist)
         self.hist[globals.board.currentIndex] = item
         self.indexes.append(globals.board.currentIndex)
+        if globals.board.currentIndex > self.highestIndex:
+            print("why")
+            self.highestIndex = globals.board.currentIndex
     def getCurrent(self):
-        if globals.board.currentIndex in self.hist:
-            return self.hist[globals.board.currentIndex]
-        return self.hist[self.indexes[-1]]
+        print(globals.board.currentIndex, self.hist)
+        for i in range(globals.board.currentIndex, -1, -1): # from currentIndex, finds the closest index (floored though)
+            if i in self.hist:
+                return self.hist[i]
 
 class Rook(Piece):
     imgName = "rook"
@@ -89,6 +97,8 @@ class Pawn(Piece):
         self._state = AttrHist(globals.PawnStates.OriginalPos)
     @property
     def state(self):
+        if self.color == config.Color.black:
+            print(self._state.hist, self._state.indexes, globals.board.currentIndex, globals.board.highestIndex)
         return self._state.getCurrent()
     @state.setter
     def state(self, state):
