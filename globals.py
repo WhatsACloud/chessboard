@@ -15,7 +15,7 @@ class globals():
         Color.white: {}, # where white will be attacked
         Color.black: {} # where black will be attacked
     } # for checking if king is checked
-    class PawnStates(Enum):
+    class PawnStates:
         OriginalPos = 0
         CanEnPassant = 1
         Matured = 2 # as in it is past the two move thingy

@@ -1,10 +1,8 @@
 import tkinter as tk
 import config
 from piece import PieceImg
-from pos import Pos, Scale
+from pos import Pos
 from globals import globals
-import canvasObjs
-import draw
 
 WIDTH = 40
 MARGIN = -7
@@ -33,27 +31,9 @@ class TakenPieces:
         if self.color == checkColor:
             self.yAxis = self.startPos.y + boardWidth + WIDTH
 
-class UndoButton:
-    def __init__(self):
-        self.obj = canvasObjs.Button(
-                self.undo,
-                Scale(0.8, 0.5),
-                Scale(0.1, 0.05),
-                draw.WHITE,
-                draw.LIGHTGREY,
-                24,
-                "Undo"
-            )
-        globals.canvas.bindToResize(self.update)
-    def undo(self, e):
-        print("undo")
-        globals.board.history.back()
-    def update(self):
-        self.obj.update()
-
 class Menu:
     def __init__(self):
-        self.undoBtn = UndoButton()
+        pass
 
 class extraUI:
     def __init__(self, startPos):

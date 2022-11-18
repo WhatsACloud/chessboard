@@ -20,7 +20,7 @@ class Square():
         return hash(self.boardPos)
     def runAfterFunc(self, piece):
         if self.after:
-            self.after.after(piece)
+            self.after(piece)
             self.after = None
     def bindEvent(self, evt, func):
         globals.canvas.canvas.tag_bind(self.id, evt, func)

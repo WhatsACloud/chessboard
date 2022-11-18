@@ -68,20 +68,9 @@ class Piece():
         self.delete()
         globals.board.taken.add(self)
         globals.board.pieces[self.color].remove(self)
-    def reAdd(self, square):
-        self.square = square
-        self.boardPos = square.boardPos
-        square.setPiece(self)
-        globals.board.taken.remove(self)
-        globals.board.pieces[self.color].append(self)
-        self.createImg()
-        self.snap()
     def delete(self):
         self.deleteImg()
         self.square.setPiece(None)
-        self.square.piece = None
-    def createImg(self):
-        self.imgObj.createObj()
     def deleteImg(self):
         self.imgObj.hide()
     def updateBoard(self):

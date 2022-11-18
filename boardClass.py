@@ -1,6 +1,4 @@
 # Note: board array should be rows of columns
-import math
-
 from pos import BoardPos, Pos
 import draw
 import config
@@ -10,7 +8,7 @@ from notification import Notification
 from square import Square
 from globals import globals, HighlightType
 from extraUI import extraUI
-from history import History
+import math
 
 class Taken:
     def __init__(self):
@@ -21,19 +19,13 @@ class Taken:
     def add(self, piece):
         self.table[piece.color].append(piece)
         globals.board.extraUI.takenPieces[piece.color].update()
-    def remove(self, piece):
-        self.table[piece.color].remove(piece)
-        globals.board.extraUI.takenPieces[piece.color].update()
     def getTable(self, color):
         return self.table[color]
 
+
 class Board(): # rows and columns start at 0, not 1
     def __init__(self, startPos):
-        self._currentIndex = 0 # WHY
-        self.highestIndex = 0
-        self._prevCurrentIndex = 0
         self.reversed = False
-        self.history = History()
         self.extraUI = extraUI(startPos)
         self.startPos = startPos
         self.board = self.createBoard()
@@ -61,21 +53,6 @@ class Board(): # rows and columns start at 0, not 1
         self.bindEvents()
         # globals.canvas.canvas.bind("<Button-1>", self.click)
         # self.drawnBoard = draw.drawBoard(canvas, boardLength, config.SQUARE_LENGTH, startPos)
-    @property
-    def currentIndex(self):
-        return self._currentIndex
-    def incrementCurrentIndex(self):
-        self._currentIndex += 1
-    def decrementCurrentIndex(self):
-        if self._currentIndex > 0:
-            self._currentIndex -= 1
-    def updateHighestIndex(self):
-        if self.currentIndex > self._prevCurrentIndex:
-            self._prevCurrentIndex = self.currentIndex
-            self.highestIndex = self.currentIndex
-            return
-        else:
-            self._prevCurrentIndex = self.currentIndex
     def bindEvents(self):
         globals.canvas.canvas.bind("<Button-1>", self.clickedOut)
     def unbindEvents(self):
@@ -110,8 +87,6 @@ class Board(): # rows and columns start at 0, not 1
         elif currentKing.isStalemated():
             Notification("Stalemate!")
         self.reverseBoard()
-        self.incrementCurrentIndex()
-        self.updateHighestIndex()
     def newPromotionPrompt(self, piece, newSquare): # ah yes i am very intelligent
         if self.promotionPrompt:
             self.promotionPrompt.delete()
@@ -134,18 +109,18 @@ class Board(): # rows and columns start at 0, not 1
         if self.kings[piece.color].wouldSelfBeChecked(piece, newSquare):
             return False
         if piece.imgName == "pawn": # bad code but I'll only change it if another piece is like this
+            if piece.state == globals.PawnStates.OriginalPos:
+                piece.state = globals.PawnStates.CanEnPassant
             if piece.canPromote(newSquare.boardPos):
                 piece.promote(newSquare.boardPos)
                 return False
+        if piece.imgName == "rook" or piece.imgName == "king":
+            piece.notMoved = False
         return True
     def movePiece(self, boardPos, piece): # should ONLY move piece and call nextTurn
         piece.snap(boardPos)
+        # piece.movetoPos(self.getPosFromBoardPos(boardPos))
         self.nextTurn()
-        if piece.imgName == "pawn":
-            if piece.state == globals.PawnStates.OriginalPos:
-                piece.state = globals.PawnStates.CanEnPassant
-        if piece.imgName == "rook" or piece.imgName == "king":
-            piece.notMoved = False
     def takePiece(self, piece):
         if not (piece and self.validate(piece.boardPos, True)):
             return False
@@ -154,23 +129,19 @@ class Board(): # rows and columns start at 0, not 1
         return True
     def moveSelected(self, square):
         selected = self.selected
-        origin = BoardPos(selected.boardPos.x, selected.boardPos.y)
         selected.unselect()
         if self.checkCanMovePiece(square, selected):
             self.movePiece(square.boardPos, selected)
-            self.history.add(origin, square.boardPos, None, square.after)
 
         square.runAfterFunc(selected)
         selected.reset()
     def takenBySelected(self, square):
         selected = self.selected
-        origin = BoardPos(selected.boardPos.x, selected.boardPos.y)
         pieceToTake = square.pieceToTake # why is this None?
         if self.takePiece(pieceToTake):
             self.unselectFully()
             if self.checkCanMovePiece(square, selected, True):
                 self.movePiece(square.boardPos, selected)
-                self.history.add(origin, square.boardPos, pieceToTake)
         selected.reset()
     def isCorrectColor(self, piece):
         return globals.turn == piece.color
