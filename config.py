@@ -4,7 +4,7 @@ BOARD_LENGTH = 8
 startX, startY = 100, 100
 
 # window config
-WIDTH, HEIGHT = 200, 200
+WIDTH, HEIGHT = 800, 800
 
 # misc
 FONT = "TKDefaultFont"

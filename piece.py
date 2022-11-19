@@ -1,4 +1,7 @@
-import tkinter as tk
+try:
+    import tkinter as tk
+except ImportError: # python2
+    import Tkinter as tk
 from PIL import Image, ImageTk
 
 from pos import Pos, BoardPos

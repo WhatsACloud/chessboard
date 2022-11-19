@@ -1,4 +1,7 @@
-import tk
+try:
+    import tkinter as tk
+except ImportError: # python2
+    import Tkinter as tk
 import math
 from globals import globals
 from pos import Scale, Pos
