@@ -135,13 +135,6 @@ class King(Piece):
         for pieceType in globals.attackAngles[self.color]:
             takes = globals.attackAngles[self.color][pieceType]
             for take in takes:
-                # allTakes = []
-                # # print(take)
-                # for square in take.calc(self, False):
-                    # if type(globals.board.getSquare(square.boardPos).piece) == pieceType:
-                        # allTakes.append(square)
-                # if len(allTakes) > 0:
-                    # return True
                 square = take.calc(self, False)
                 if square and square.piece and type(square.piece) == pieceType:
                     return True

@@ -37,7 +37,7 @@ class RestartButton:
     def __init__(self):
         self.obj = canvasObjs.Button(
                 self.restart,
-                Scale(0.8, 0.5),
+                Scale(0.85, 0.5),
                 Scale(0.15, 0.08),
                 draw.WHITE,
                 draw.LIGHTGREY,

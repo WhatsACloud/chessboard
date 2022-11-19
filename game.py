@@ -42,11 +42,9 @@ class Game():
         setupPieces(config.Color.white)
 
         # pieces.King(BoardPos(4, 7), config.Color.black)
-        # pieces.Rook(BoardPos(0, 7), config.Color.black)
-        # pieces.Rook(BoardPos(7, 7), config.Color.black)
+        # pieces.Rook(BoardPos(0, 6), config.Color.white)
+        # pieces.Rook(BoardPos(7, 6), config.Color.white)
         # pieces.King(BoardPos(4, 0), config.Color.white)
-        # pieces.Rook(BoardPos(0, 0), config.Color.white)
-        # pieces.Pawn(BoardPos(4, 1), config.Color.black)
     def reset(self):
         globals.board.delete()
         initCanvas(globals.window)

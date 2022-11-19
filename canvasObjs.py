@@ -116,7 +116,6 @@ class Button: # a button on tk canvas because yes
         diff = self.bg.scale - scale
         self.bg.scale = scale
         self.text.scale -= diff
-        print(self.text.scale)
         self.update()
     def update(self):
         self.bg.update()
