@@ -53,10 +53,17 @@ class Board(): # rows and columns start at 0, not 1
         self.bindEvents()
         # globals.canvas.canvas.bind("<Button-1>", self.click)
         # self.drawnBoard = draw.drawBoard(canvas, boardLength, config.SQUARE_LENGTH, startPos)
+    def delete(self):
+        for row in self.board:
+            for square in row:
+                square.delete()
+                del square
+        globals.canvas.unbindAllResize()
+        self.unbindEvents()
     def bindEvents(self):
         globals.canvas.canvas.bind("<Button-1>", self.clickedOut)
     def unbindEvents(self):
-        pass
+        globals.canvas.canvas.unbind_all("<Button-1>")
     def clickedOut(self, e):
         if self.selected and self.canUnselect:
             return self.unselectFully()

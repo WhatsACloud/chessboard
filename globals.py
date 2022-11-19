@@ -11,6 +11,7 @@ class globals():
     canvas = None
     turn = None
     window = None
+    game = None
     attackAngles = {
         Color.white: {}, # where white will be attacked
         Color.black: {} # where black will be attacked

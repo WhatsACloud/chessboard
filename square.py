@@ -14,6 +14,12 @@ class Square():
         self.piece = None
         self.after = None # my epiphany that I am stupid
         self.bindEvents()
+    def delete(self):
+        self.deleteSquare()
+        self.deleteCircle()
+        globals.canvas.canvas.delete(self.id)
+        if self.piece:
+            self.piece.delete()
     def __repr__(self):
         return f"[{self.boardPos.x}, {self.boardPos.y}]"
     def __hash__(self):

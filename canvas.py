@@ -29,9 +29,17 @@ class Canvas: # why james WHY
             evt()
     def unbindResize(self, func):
         self.resizeEvts.remove(func)
+    def unbindAllResize(self):
+        self.resizeEvts = []
+    def delete(self):
+        self.unbindAllResize()
+        self.canvas.destroy()
 
 def initCanvas(window):
     canvas = tk.Canvas(window, width=800, height=600, bg='steelblue')
     canvas.pack(fill=tk.BOTH, expand=True)
+    if globals.canvas:
+        globals.canvas.delete()
+        del globals.canvas
     globals.canvas = Canvas(canvas)
     window.bind("<Configure>", globals.canvas.resize)

@@ -1,8 +1,10 @@
 import tkinter as tk
 import config
 from piece import PieceImg
-from pos import Pos
+from pos import Pos, Scale
 from globals import globals
+import canvasObjs
+import draw
 
 WIDTH = 40
 MARGIN = -7
@@ -31,9 +33,26 @@ class TakenPieces:
         if self.color == checkColor:
             self.yAxis = self.startPos.y + boardWidth + WIDTH
 
+class RestartButton:
+    def __init__(self):
+        self.obj = canvasObjs.Button(
+                self.restart,
+                Scale(0.8, 0.5),
+                Scale(0.15, 0.08),
+                draw.WHITE,
+                draw.LIGHTGREY,
+                24,
+                "Restart"
+            )
+        globals.canvas.bindToResize(self.update)
+    def restart(self, e):
+        globals.game.reset()
+    def update(self):
+        self.obj.update()
+
 class Menu:
     def __init__(self):
-        pass
+        self.restartBtn = RestartButton()
 
 class extraUI:
     def __init__(self, startPos):

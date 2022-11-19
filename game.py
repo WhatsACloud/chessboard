@@ -7,6 +7,7 @@ import config
 import pieces
 import draw
 import gc
+from canvas import initCanvas
 
 def setupPieces(color):
     firstRow, secondRow = None, None
@@ -26,12 +27,12 @@ def setupPieces(color):
     for i in range(config.BOARD_LENGTH):
         pieces.Pawn(BoardPos(i, secondRow), color)
 
-
 class Game():
     def __init__(self, startPos, length):
         self.startPos = startPos
         self.length = length
         self.init()
+        globals.game = self
     def init(self):
         initBoard(self.startPos, Square)
         globals.turn = config.Color.white
@@ -46,8 +47,10 @@ class Game():
         # pieces.King(BoardPos(4, 0), config.Color.white)
         # pieces.Rook(BoardPos(0, 0), config.Color.white)
         # pieces.Pawn(BoardPos(4, 1), config.Color.black)
-    def reset():
-        print(len(gc.get_objects()))
+    def reset(self):
+        globals.board.delete()
+        initCanvas(globals.window)
+        board = globals.board
         del globals.board
-        print(len(gc.get_objects()))
+        globals.board = None
         self.init()
